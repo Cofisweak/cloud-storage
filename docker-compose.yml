@@ -3,6 +3,10 @@ version: '3'
 volumes:
   postgres-data:
     driver: local
+  minio-data:
+    driver: local
+  redis-data:
+    driver: local
 
 services:
   redis:
@@ -12,6 +16,8 @@ services:
       - "6379:6379"
     environment:
       - REDIS_PASSWORD=${REDIS_PASSWORD}
+    volumes:
+      - redis-data:/data
 
   postgres:
     image: postgres:latest
@@ -22,3 +28,18 @@ services:
       - POSTGRES_DB=${POSTGRES_DATABASE}
     volumes:
       - postgres-data:/var/lib/postgresql/data
+    ports:
+      - "${POSTGRES_PORT}:5432"
+
+  minio:
+    image: minio/minio:latest
+    container_name: minio
+    environment:
+      - MINIO_ROOT_USER=${MINIO_ACCESS_KEY}
+      - MINIO_ROOT_PASSWORD=${MINIO_SECRET_KEY}
+    command: server ~/minio --console-address :9090
+    ports:
+      - '9090:9090'
+      - '9000:9000'
+    volumes:
+      - minio-data:/minio

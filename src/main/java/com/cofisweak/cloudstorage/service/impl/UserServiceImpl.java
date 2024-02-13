@@ -5,12 +5,14 @@ import com.cofisweak.cloudstorage.domain.exception.PasswordsNotEqualsException;
 import com.cofisweak.cloudstorage.domain.exception.UsernameAlreadyExistsException;
 import com.cofisweak.cloudstorage.mapper.UserMapper;
 import com.cofisweak.cloudstorage.repository.UserRepository;
+import com.cofisweak.cloudstorage.service.FileStorageService;
 import com.cofisweak.cloudstorage.service.UserService;
 import com.cofisweak.cloudstorage.web.dto.RegisterDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,6 +25,8 @@ public class UserServiceImpl implements UserService, UserDetailsService {
 
     private final UserRepository userRepository;
     private final UserMapper userMapper;
+    private final FileStorageService fileStorageService;
+    private final PasswordEncoder passwordEncoder;
 
     @Override
     public Optional<User> findById(Long id) {
@@ -46,7 +50,9 @@ public class UserServiceImpl implements UserService, UserDetailsService {
         }
 
         User user = userMapper.toEntity(dto);
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
         userRepository.save(user);
+        fileStorageService.createUserDirectory(user.getId());
     }
 
     @Override

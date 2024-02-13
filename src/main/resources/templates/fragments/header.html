@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<body>
+<header th:fragment="header" class="py-3 box-shadow border-bottom fixed-top bg-body">
+    <div class="container d-flex justify-content-between">
+        <a th:href="@{/}" class="d-flex align-items-center mb-md-0 me-md-auto text-decoration-none">
+            <img class="d-block" width="40" height="40" th:src="@{/static/images/cloud.svg}" alt="icon"/>
+            <span class="fs-4 mx-3 text header-name">Cloud Storage</span>
+        </a>
+        <div class="d-flex align-items-center justify-content-center">
+            <button class="btn btn-link theme-switcher outline-none">
+                <img width="30" height="30" th:src="@{/static/images/moon.svg}" id="theme-switcher" class="d-block"
+                     alt="theme switcher"/>
+            </button>
+            <th:block sec:authorize="isAuthenticated()">
+                <div class="user-block d-flex align-items-center ms-3" id="userBlockDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                    <span class="fs-5 fw-medium" sec:authentication="name">username</span>
+                    <svg class="ms-2" width="40" height="40" viewBox="0 0 24 24" fill="none"
+                         xmlns="http://www.w3.org/2000/svg">
+                        <path
+                                d="M16 7C16 9.20914 14.2091 11 12 11C9.79086 11 8 9.20914 8 7C8 4.79086 9.79086 3 12 3C14.2091 3 16 4.79086 16 7Z"
+                                stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M12 14C8.13401 14 5 17.134 5 21H19C19 17.134 15.866 14 12 14Z" stroke="currentColor"
+                              stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </div>
+                <ul class="dropdown-menu" aria-labelledby="userBlockDropdown">
+                    <li>
+                        <form th:action="@{/auth/logout}" method="post">
+                            <input class="dropdown-item" type="submit" value="Logout">
+                        </form>
+                    </li>
+                </ul>
+            </th:block>
+        </div>
+
+    </div>
+</header>
+</body>
+</html>

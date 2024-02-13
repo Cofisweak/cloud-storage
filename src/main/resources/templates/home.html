@@ -1,13 +1,208 @@
-<!doctype html>
-<html lang="en">
+<!DOCTYPE html>
+<html lang="ru">
+
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport"
-          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>Document</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+    <link rel="stylesheet" th:href="@{/static/css/style.css}">
+    <link rel="shortcut icon" th:href="@{/static/favicon.ico}" type="image/x-icon">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"
+            integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL"
+            crossorigin="anonymous"></script>
+    <title>Cloud Storage</title>
 </head>
-<body>
-empty page
+
+<body class="d-flex flex-column min-vh-100" th:attr="data-bs-theme=${theme}">
+<div th:replace="~{fragments/header :: header}"></div>
+<main class="container">
+    <nav aria-label="breadcrumb" class="d-flex align-items-end justify-content-between flex-wrap gap-3">
+        <ol class="breadcrumb m-1">
+            <li th:each="breadcrumb : ${breadcrumbs}" class="breadcrumb-item">
+                <a th:href="@{/(path=${breadcrumb.path})}" th:text="${breadcrumb.objectName}">folder</a>
+            </li>
+        </ol>
+        <button type="button" class="btn border d-flex align-items-center gap-2" id="search"
+                data-bs-toggle="dropdown"
+                aria-expanded="false"
+                data-bs-auto-close="outside">
+            <svg fill="currentColor" width="16" height="16" viewBox="0 0 32 32">
+                <path d="M31.707 30.282l-9.717-9.776c1.811-2.169 2.902-4.96 2.902-8.007 0-6.904-5.596-12.5-12.5-12.5s-12.5 5.596-12.5 12.5 5.596 12.5 12.5 12.5c3.136 0 6.002-1.158 8.197-3.067l9.703 9.764c0.39 0.39 1.024 0.39 1.415 0s0.39-1.023 0-1.415zM12.393 23.016c-5.808 0-10.517-4.709-10.517-10.517s4.708-10.517 10.517-10.517c5.808 0 10.516 4.708 10.516 10.517s-4.709 10.517-10.517 10.517z"></path>
+            </svg>
+            Search
+        </button>
+        <div class="dropdown-menu dropdown-menu-end p-3" aria-labelledby="search">
+            <form th:action="@{/search}" method="post">
+                <div class="form-group">
+                    <label for="searchInput">Enter folder or file name:</label>
+                    <input name="folderName" class="form-control mt-2" id="searchInput" type="text"
+                           placeholder="ex. Cats" required>
+                </div>
+                <div class="form-group mt-2 d-flex align-items-center justify-content-between gap-2 flex-wrap">
+                    <div>
+                        <label for="searcher-type" class="">Search in</label>
+                        <select id="searcher-type" class="border-0 bg-body shadow-none outline-none">
+                            <option selected>Here</option>
+                            <option>Root</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-sm">Search</button>
+                </div>
+            </form>
+        </div>
+    </nav>
+    <div class="explorer-wrapper shadow border mt-4 mb-2">
+        <div class="d-flex align-items-center gap-2 flex-wrap p-2">
+            <a class="btn px-2 border" th:href="@{/(path=${rootPath})}" th:if="${!rootPath.equals(currentPath)}">
+                <svg width="20" height="20" viewBox="2 2 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M6 12H18M6 12L11 7M6 12L11 17" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </a>
+            <button type="button" class="btn border d-flex align-items-center gap-1" id="createFolderDropdown"
+                    data-bs-toggle="dropdown"
+                    aria-expanded="false"
+                    data-bs-auto-close="outside">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path
+                            d="M9 13H15M12 10V16M12.0627 6.06274L11.9373 5.93726C11.5914 5.59135 11.4184 5.4184 11.2166 5.29472C11.0376 5.18506 10.8425 5.10425 10.6385 5.05526C10.4083 5 10.1637 5 9.67452 5H6.2C5.0799 5 4.51984 5 4.09202 5.21799C3.71569 5.40973 3.40973 5.71569 3.21799 6.09202C3 6.51984 3 7.07989 3 8.2V15.8C3 16.9201 3 17.4802 3.21799 17.908C3.40973 18.2843 3.71569 18.5903 4.09202 18.782C4.51984 19 5.07989 19 6.2 19H17.8C18.9201 19 19.4802 19 19.908 18.782C20.2843 18.5903 20.5903 18.2843 20.782 17.908C21 17.4802 21 16.9201 21 15.8V10.2C21 9.0799 21 8.51984 20.782 8.09202C20.5903 7.71569 20.2843 7.40973 19.908 7.21799C19.4802 7 18.9201 7 17.8 7H14.3255C13.8363 7 13.5917 7 13.3615 6.94474C13.1575 6.89575 12.9624 6.81494 12.7834 6.70528C12.5816 6.5816 12.4086 6.40865 12.0627 6.06274Z"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                New folder
+            </button>
+            <div class="dropdown-menu p-3" aria-labelledby="createFolderDropdown">
+                <form th:action="@{/createFolder}" method="post">
+                    <div class="form-group">
+                        <label for="folderNameInput">Enter folder name:</label>
+                        <input name="folderName" class="form-control mt-2" id="folderNameInput" type="text"
+                               placeholder="Folder name" required>
+                        <input name="path" type="hidden" th:value="${currentPath}">
+                    </div>
+                    <div class="mt-2 d-flex align-item-center justify-content-end gap-2">
+                        <button type="submit" class="btn btn-primary btn-sm">Create</button>
+                    </div>
+                </form>
+            </div>
+            <button type="button" class="btn border  d-flex align-items-center gap-1" id="upload"
+                    data-bs-toggle="dropdown"
+                    aria-expanded="false"
+                    data-bs-auto-close="outside">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path
+                            d="M4 16.2422C2.79401 15.435 2 14.0602 2 12.5C2 10.1564 3.79151 8.23129 6.07974 8.01937C6.54781 5.17213 9.02024 3 12 3C14.9798 3 17.4522 5.17213 17.9203 8.01937C20.2085 8.23129 22 10.1564 22 12.5C22 14.0602 21.206 15.435 20 16.2422M8 16L12 12M12 12L16 16M12 12V21"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                Upload
+            </button>
+            <div class="dropdown-menu p-2" aria-labelledby="upload">
+                <div id="upload-menu" class="d-flex align-items-center justify-content-center flex-column mx-4 my-2">
+                    <div class="d-flex align-items-center justify-content-center flex-wrap gap-2 text-center">
+                        <form th:action="@{/upload}" id="folder-upload-form" method="post" enctype="multipart/form-data">
+                            <input name="path" type="hidden" th:value="${currentPath}">
+                            <label class="upload-block">
+                                <input class="upload-input" type="file" name="files" id="folder-input" multiple webkitdirectory
+                                       directory>
+                                <span class="upload-input-button btn btn-primary">Upload folder</span>
+                            </label>
+                        </form>
+                        <form th:action="@{/upload}" id="file-upload-form" method="post" enctype="multipart/form-data">
+                            <input name="path" type="hidden" th:value="${currentPath}">
+                            <label class="upload-block">
+                                <input class="upload-input" type="file" name="files" id="file-input" multiple>
+                                <span class="upload-input-button btn btn-primary">Upload files</span>
+                            </label>
+                        </form>
+                    </div>
+                    <form th:action="@{/upload}" id="dragndrop-upload-form" method="post" enctype="multipart/form-data">
+                        <input name="path" type="hidden" th:value="${currentPath}">
+                    </form>
+                    <svg id="file-drop-area" class="d-block file-drop-area" width="50%" height="50%" viewBox="0 0 24 24"
+                         fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path style="pointer-events: none;"
+                              d="M4 16.2422C2.79401 15.435 2 14.0602 2 12.5C2 10.1564 3.79151 8.23129 6.07974 8.01937C6.54781 5.17213 9.02024 3 12 3C14.9798 3 17.4522 5.17213 17.9203 8.01937C20.2085 8.23129 22 10.1564 22 12.5C22 14.0602 21.206 15.435 20 16.2422M8 16L12 12M12 12L16 16M12 12V21"
+                              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    <h5 id="file-drop-advice">Drop files here to upload</h5>
+                    <p class="m-0">Max file size: 20MB</p>
+                    <p class="m-0">Max upload size: 500MB</p>
+                </div>
+            </div>
+        </div>
+        <div th:if="${objects.isEmpty()}" class="text-center p-3 border-top fs-5">
+            <div class="d-flex align-items-center flex-column">
+                <img width="200" th:src="@{/static/images/cloud.svg}" alt="cloud icon">
+                <span class="fw-bold">Folder is empty</span>
+            </div>
+        </div>
+        <div th:unless="${objects.isEmpty()}" class="explorer text-center p-3 border-top">
+            <div th:each="object: ${objects}" th:object="${object}"
+                 th:with="baseUrl=*{isDirectory()}? '/' : '/file/'"
+                 th:attr="path=*{path},baseUrl=@{${baseUrl}}"
+                 class="explorer-item d-flex align-items-center justify-content-center flex-column">
+                <img th:if="*{isDirectory}" th:src="@{/static/images/folder.svg}" class="item-icon d-block"
+                     alt="object icon">
+                <img th:unless="*{isDirectory}" th:src="@{/static/images/file.svg}" class="item-icon d-block"
+                     alt="object icon">
+                <div class="d-flex align-items-center dropdown-menu-start w-100">
+                    <span class="d-block item-name" th:text="*{objectName}">Object name</span>
+                    <button class="item-dots btn btn-link border-0 p-0" data-bs-toggle="dropdown">
+                        <svg class="d-block" width="30" height="30" viewBox="0 0 24 24" fill="none">
+                            <path
+                                    d="M14 12C14 13.1046 13.1046 14 12 14C10.8954 14 10 13.1046 10 12C10 10.8954 10.8954 10 12 10C13.1046 10 14 10.8954 14 12Z"
+                                    style="stroke: var(--bs-body-color);" stroke-width="1.5" stroke-linecap="round"
+                                    stroke-linejoin="round"/>
+                            <path
+                                    d="M14 19C14 20.1046 13.1046 21 12 21C10.8954 21 10 20.1046 10 19C10 17.8954 10.8954 17 12 17C13.1046 17 14 17.8954 14 19Z"
+                                    style="stroke: var(--bs-body-color);" stroke-width="1.5" stroke-linecap="round"
+                                    stroke-linejoin="round"/>
+                            <path
+                                    d="M14 5C14 6.10457 13.1046 7 12 7C10.8954 7 10 6.10457 10 5C10 3.89543 10.8954 3 12 3C13.1046 3 14 3.89543 14 5Z"
+                                    style="stroke: var(--bs-body-color);" stroke-width="1.5" stroke-linecap="round"
+                                    stroke-linejoin="round"/>
+                        </svg>
+                    </button>
+                    <ul class="dropdown-menu">
+                        <li>
+                            <a th:href="@{${baseUrl}(path=*{path})}" class="dropdown-item">Open</a>
+                        </li>
+                        <li>
+                            <a th:href="@{${baseUrl}(path=*{path})}" target="_blank" class="dropdown-item"
+                               type="button">Open in new tab</a>
+                        </li>
+                        <li>
+                            <hr class="dropdown-divider">
+                        </li>
+                        <li>
+                            <button class="dropdown-item" type="button">Rename</button>
+                        </li>
+                        <li>
+                            <button class="dropdown-item" type="button">Select</button>
+                        </li>
+                        <li>
+                            <form th:action="@{${baseUrl} + 'delete'}" method="post">
+                                <input type="hidden" name="path" th:value="${currentPath}">
+                                <input type="hidden" name="objectName" th:value="*{objectName}">
+                                <button class="dropdown-item text-danger" type="submit">Delete</button>
+                            </form>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+<div id="alert" th:if="${errorMessage}" class="toast position-absolute bottom-0 end-0" role="alert" aria-live="assertive"
+     aria-atomic="true">
+    <div class="toast-header">
+        <strong class="me-auto">Error</strong>
+        <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+    </div>
+    <div class="toast-body error-color" th:utext="${errorMessage}">
+        error text
+    </div>
+</div>
+<script th:replace="~{fragments/scripts :: theme}"></script>
+<script th:src="@{/static/js/folderPage.js}"></script>
 </body>
+
 </html>

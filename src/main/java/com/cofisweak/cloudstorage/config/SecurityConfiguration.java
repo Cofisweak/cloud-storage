@@ -24,11 +24,12 @@ public class SecurityConfiguration {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity httpSecurity) throws Exception {
         return httpSecurity
+                .csrf(Customizer.withDefaults())
                 .cors(Customizer.withDefaults())
                 .authorizeHttpRequests(configurer ->
                         configurer
                                 .requestMatchers("/auth/register").permitAll()
-                                .requestMatchers("/css/**", "/images/**", "/js/**", "favicon.ico").permitAll()
+                                .requestMatchers("/static/**", "favicon.ico").permitAll()
                                 .requestMatchers("robots.txt").denyAll()
                                 .anyRequest().authenticated()
                 )

@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="ru">
+<body>
+<script th:fragment="theme">
+    //Theme Switcher
+    let themeSwitcher;
+    const getStoredTheme = () => localStorage.getItem("theme");
+    const setStoredTheme = (theme) => localStorage.setItem("theme", theme);
+    const getCurrentTheme = () => document.body.getAttribute("data-bs-theme");
+
+    const setThemeCookie = (theme) => {
+        document.cookie = 'theme=' + theme + ';path=/;max-age=31536000';
+    }
+
+    const setTheme = (theme) => {
+        document.body.setAttribute("data-bs-theme", theme);
+    };
+
+    const setSunIcon = () => {
+        themeSwitcher.setAttribute("src", '[[@{/static/images/sun.svg}]]');
+    };
+
+    const setMoonIcon = () => {
+        themeSwitcher.setAttribute("src", '[[@{/static/images/moon.svg}]]');
+    };
+
+    const updateTheme = (theme) => {
+        switch (theme) {
+            case "dark":
+                setTheme("dark");
+                setStoredTheme("dark");
+                setThemeCookie('dark')
+                setSunIcon();
+                break;
+            default:
+                setTheme("light");
+                setStoredTheme("light");
+                setThemeCookie('light')
+                setMoonIcon();
+        }
+    };
+
+    const themeSwitcherCallback = () => {
+        const currentTheme = getCurrentTheme();
+        switch (currentTheme) {
+            case "light":
+                updateTheme("dark");
+                break;
+            default:
+                updateTheme("light");
+        }
+    };
+
+    window.addEventListener("DOMContentLoaded", () => {
+        themeSwitcher = document.getElementById("theme-switcher");
+        themeSwitcher.addEventListener("click", themeSwitcherCallback);
+        const storedTheme = getStoredTheme();
+        if (storedTheme) {
+            updateTheme(storedTheme);
+        } else {
+            updateTheme("light");
+        }
+    });
+</script>
+</body>
+</html>

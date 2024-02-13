@@ -6,10 +6,12 @@ import io.minio.messages.Item;
 import lombok.SneakyThrows;
 import org.springframework.stereotype.Component;
 
+import java.text.DecimalFormat;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 import static com.cofisweak.cloudstorage.utils.PathUtils.extractObjectName;
 import static com.cofisweak.cloudstorage.utils.PathUtils.trimUserFolder;
@@ -28,20 +30,26 @@ public class MinioEntityMapper {
                 continue;
             }
 
-            StorageEntityDto dto = StorageEntityDto.builder()
-                    .objectName(extractObjectName(item.objectName()))
-                    .path(trimUserFolder(item.objectName()))
-                    .isDirectory(item.objectName().endsWith("/"))
-                    .size(stringifySize(item.size()))
-                    .createdAt(stringifyCreatedAt(item))
-                    .build();
+            StorageEntityDto dto = map(item);
             result.add(dto);
         }
         return result;
     }
 
+    public StorageEntityDto map(Item item) {
+        return StorageEntityDto.builder()
+                .objectName(extractObjectName(item.objectName()))
+                .path(trimUserFolder(item.objectName()))
+                .isDirectory(item.objectName().endsWith("/"))
+                .size(stringifySize(item.size()))
+                .createdAt(stringifyCreatedAt(item))
+                .build();
+    }
+
     private String stringifyCreatedAt(Item item) {
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss").withZone(ZoneId.systemDefault());
+        DateTimeFormatter formatter = DateTimeFormatter
+                .ofPattern("dd MMM yyyy HH:mm:ss", Locale.ENGLISH)
+                .withZone(ZoneId.systemDefault());
         try {
             return item.lastModified().format(formatter);
         } catch (NullPointerException ignored) {}
@@ -49,13 +57,14 @@ public class MinioEntityMapper {
     }
 
     private String stringifySize(long size) {
-        String[] prefix = new String[]{"", "K", "M", "G", "T"};
+        String[] prefix = new String[]{"B", "KB", "MB", "GB", "TB"};
+        DecimalFormat formatter = new DecimalFormat("#.#");
         int index = 0;
         double resultSize = size;
         while (resultSize >= 1024) {
             resultSize /= 1024;
             index++;
         }
-        return "%.1f%sB".formatted(resultSize, prefix[index]);
+        return formatter.format(resultSize) + prefix[index];
     }
 }

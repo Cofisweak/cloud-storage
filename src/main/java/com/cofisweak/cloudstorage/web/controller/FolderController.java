@@ -3,7 +3,6 @@ package com.cofisweak.cloudstorage.web.controller;
 import com.cofisweak.cloudstorage.domain.exception.FileStorageException;
 import com.cofisweak.cloudstorage.service.FileStorageService;
 import com.cofisweak.cloudstorage.utils.PathUtils;
-import com.cofisweak.cloudstorage.web.dto.Breadcrumb;
 import com.cofisweak.cloudstorage.web.dto.CreateFolderDto;
 import com.cofisweak.cloudstorage.web.dto.DeleteDto;
 import com.cofisweak.cloudstorage.web.dto.UploadDto;
@@ -17,9 +16,8 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.List;
 
+import static com.cofisweak.cloudstorage.utils.Utils.createBreadcrumbsFromPath;
 import static com.cofisweak.cloudstorage.utils.Utils.mapValidationResultToErrorMessage;
 
 @Controller
@@ -108,24 +106,5 @@ public class FolderController {
         }
 
         return "redirect:/?path=" + URLEncoder.encode(dto.getPath(), StandardCharsets.UTF_8);
-    }
-
-    private List<Breadcrumb> createBreadcrumbsFromPath(String path) {
-        List<Breadcrumb> result = new ArrayList<>();
-
-        result.add(new Breadcrumb("Home", "/"));
-
-        String[] objects = path.split("/");
-        String currentPath = "/";
-        for (String object : objects) {
-            if(object.isBlank()) continue;
-            currentPath += object + "/";
-            result.add(new Breadcrumb(object, currentPath));
-        }
-
-        if(!path.endsWith("/") && result.size() > 1) {
-            result.remove(result.size() - 1);
-        }
-        return result;
     }
 }

@@ -17,12 +17,8 @@
 <body class="d-flex flex-column min-vh-100" th:attr="data-bs-theme=${theme}">
 <div th:replace="~{fragments/header :: header}"></div>
 <main class="container">
-    <nav aria-label="breadcrumb" class="d-flex align-items-end justify-content-between flex-wrap gap-3">
-        <ol class="breadcrumb m-1">
-            <li th:each="breadcrumb : ${breadcrumbs}" class="breadcrumb-item">
-                <a th:href="@{/(path=${breadcrumb.path})}" th:text="${breadcrumb.objectName}">folder</a>
-            </li>
-        </ol>
+    <nav aria-label="breadcrumb" class="d-flex align-items-start justify-content-between flex-wrap gap-3">
+        <ol th:replace="~{fragments/breadcrumbs :: breadcrumbs}"></ol>
         <button type="button" class="btn border d-flex align-items-center gap-2" id="search"
                 data-bs-toggle="dropdown"
                 aria-expanded="false"
@@ -52,7 +48,7 @@
             </form>
         </div>
     </nav>
-    <div class="explorer-wrapper shadow border mt-4 mb-2">
+    <div class="explorer-wrapper shadow border mt-3 mb-2">
         <div class="d-flex align-items-center gap-2 flex-wrap p-2">
             <a class="btn px-2 border" th:href="@{/(path=${rootPath})}" th:if="${!rootPath.equals(currentPath)}">
                 <svg width="20" height="20" viewBox="2 2 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -136,7 +132,7 @@
         </div>
         <div th:unless="${objects.isEmpty()}" class="explorer text-center p-3 border-top">
             <div th:each="object: ${objects}" th:object="${object}"
-                 th:with="baseUrl=*{isDirectory()}? '/' : '/file/'"
+                 th:with="baseUrl=*{isDirectory()}? '' : '/file'"
                  th:attr="path=*{path},baseUrl=@{${baseUrl}}"
                  class="explorer-item d-flex align-items-center justify-content-center flex-column">
                 <img th:if="*{isDirectory}" th:src="@{/static/images/folder.svg}" class="item-icon d-block"
@@ -179,7 +175,7 @@
                             <button class="dropdown-item" type="button">Select</button>
                         </li>
                         <li>
-                            <form th:action="@{${baseUrl} + 'delete'}" method="post">
+                            <form th:action="@{${baseUrl} + '/delete'}" method="post">
                                 <input type="hidden" name="path" th:value="${currentPath}">
                                 <input type="hidden" name="objectName" th:value="*{objectName}">
                                 <button class="dropdown-item text-danger" type="submit">Delete</button>

@@ -121,6 +121,15 @@ public class MinioStorageImpl implements FileStorageService {
     }
 
     @Override
+    public StorageEntityDto getFile(String path) {
+        String storagePath = resolveToStoragePath(path);
+        if (!storageRepository.isObjectExist(storagePath)) {
+            throw new FileStorageException("File not found");
+        }
+        return storageRepository.getFile(storagePath);
+    }
+
+    @Override
     public void createUserDirectory(Long userId) {
         String folderName = getUserRootFolderName(userId);
         String storagePath = folderName + "/";

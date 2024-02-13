@@ -157,6 +157,22 @@ public class MinioRepository implements StorageRepository {
         }
     }
 
+    @Override
+    public StorageEntityDto getFile(String path) {
+        try {
+            ListObjectsArgs args = ListObjectsArgs.builder()
+                    .bucket(bucket)
+                    .prefix(path)
+                    .recursive(false)
+                    .maxKeys(1)
+                    .build();
+            Iterable<Result<Item>> result = minioClient.listObjects(args);
+            return minioEntityMapper.map(result.iterator().next().get());
+        } catch (Exception e) {
+            throw new FileStorageException("Unable to get file", e);
+        }
+    }
+
     private List<SnowballObject> getSnowballObjects(List<UploadFile> uploadFiles) throws IOException {
         List<SnowballObject> objects = new ArrayList<>();
         for (UploadFile file : uploadFiles) {

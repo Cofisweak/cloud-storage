@@ -16,4 +16,5 @@ public interface StorageRepository {
     List<StorageEntityDto> getFolderContentRecursive(String path);
     InputStream downloadFile(String path);
     void uploadFiles(List<UploadFile> uploadFiles);
+    StorageEntityDto getFile(String storagePath);
 }

@@ -171,6 +171,23 @@ body {
     z-index: 9000;
 }
 
+.search-item-wrapper {
+    cursor: pointer;
+}
+
+.search-item {
+    width: 100%;
+    display: grid;
+    grid-template-columns: 8fr 2fr 1fr 65px;
+    grid-auto-flow: column;
+    align-items: center;
+    gap: 1rem;
+}
+
+.justify-self-center {
+    justify-self: center;
+}
+
 @keyframes file-drop-anim {
     25% {
         padding: 1.5rem;

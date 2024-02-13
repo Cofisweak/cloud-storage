@@ -90,7 +90,7 @@ objects.forEach(object => {
         dropdown.toggle();
     })
     const path = object.getAttribute('path');
-    const baseUrl = object.getAttribute('baseUrl');
+    const baseUrl = object.getAttribute('baseUrl') || '';
     object.addEventListener('dblclick', () => {
         window.getSelection().removeAllRanges();
         window.location.href = baseUrl + '?path=' + path;

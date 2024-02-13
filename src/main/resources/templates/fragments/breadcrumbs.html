@@ -1,0 +1,10 @@
+<!DOCTYPE html>
+<html lang="ru">
+<body>
+<ol class="breadcrumb m-1" th:fragment="breadcrumbs">
+  <li th:each="breadcrumb : ${breadcrumbs}" class="breadcrumb-item">
+    <a th:href="@{/(path=${breadcrumb.path})}" th:text="${breadcrumb.objectName}">folder</a>
+  </li>
+</ol>
+</body>
+</html>

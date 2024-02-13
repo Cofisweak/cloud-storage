@@ -20,7 +20,7 @@
     <nav aria-label="breadcrumb">
         <ol th:replace="~{fragments/breadcrumbs :: breadcrumbs}"></ol>
     </nav>
-    <div class="file-wrapper d-flex align-items-center justify-content-center flex-column flex-grow-1 mb-5" th:object="${file}">
+    <div class="file-wrapper d-flex align-items-center justify-content-center flex-column flex-grow-1 mb-5 text-center" th:object="${file}">
         <img width="140" src="/images/file.svg" alt="file icon">
         <h3 class="mb-4 mt-1" th:text="*{objectName}">file.txt</h3>
         <p class="mb-0" >Uploaded at <span th:text="*{createdAt}">date</span></p>

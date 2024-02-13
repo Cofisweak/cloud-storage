@@ -2,6 +2,7 @@ package com.cofisweak.cloudstorage.web.controller;
 
 import com.cofisweak.cloudstorage.domain.exception.ObjectNotFoundException;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
@@ -13,12 +14,13 @@ import org.springframework.web.servlet.resource.NoResourceFoundException;
 public class ControllerExceptionHandler {
 
     @ExceptionHandler({NoResourceFoundException.class, ObjectNotFoundException.class})
-    public String handleNotFound() {
-        return "not-found";
+    public String handleNotFound(Model model) {
+        model.addAttribute("message", "Resource not found");
+        return "error-page";
     }
 
     @ExceptionHandler(Throwable.class)
-    public String handleException(Throwable e, RedirectAttributes redirectAttributes) {
+    public String handleException(Throwable e, RedirectAttributes redirectAttributes, Model model) {
 
         //@ExceptionHandler(MaxUploadSizeExceededException.class) doesn't handle exception correctly
         if (e instanceof MaxUploadSizeExceededException) {
@@ -27,7 +29,7 @@ public class ControllerExceptionHandler {
         }
 
         log.error("An error occurred while processing request: ", e);
-        redirectAttributes.addFlashAttribute("errorMessage", "Something went wrong... Try later");
-        return "redirect:/";
+        model.addAttribute("message", "Something went wrong... Try later");
+        return "error-page";
     }
 }

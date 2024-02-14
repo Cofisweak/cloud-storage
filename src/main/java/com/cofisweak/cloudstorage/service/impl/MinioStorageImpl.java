@@ -7,19 +7,24 @@ import com.cofisweak.cloudstorage.repository.StorageRepository;
 import com.cofisweak.cloudstorage.service.FileStorageService;
 import com.cofisweak.cloudstorage.web.dto.*;
 import lombok.RequiredArgsConstructor;
-import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.catalina.connector.ClientAbortException;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 import static com.cofisweak.cloudstorage.utils.PathUtils.*;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class MinioStorageImpl implements FileStorageService {
 
     private final StorageRepository storageRepository;
@@ -56,7 +61,6 @@ public class MinioStorageImpl implements FileStorageService {
     }
 
     @Override
-    @SneakyThrows({IOException.class})
     public void upload(UploadDto dto) {
         Set<String> foldersToCheck = new HashSet<>();
         List<UploadFile> uploadFiles = new ArrayList<>();
@@ -72,8 +76,12 @@ public class MinioStorageImpl implements FileStorageService {
             String composedPath = composePath(dto.getPath(), localParentFolder, filename);
             String storagePath = resolveToStoragePath(composedPath);
 
-            UploadFile uploadFile = new UploadFile(storagePath, file.getInputStream());
-            uploadFiles.add(uploadFile);
+            try {
+                UploadFile uploadFile = new UploadFile(storagePath, file.getInputStream());
+                uploadFiles.add(uploadFile);
+            } catch (IOException e) {
+                log.error("An error occurred while processing download file request", e);
+            }
         }
         createFoldersIfNotExist(foldersToCheck);
         storageRepository.uploadFiles(uploadFiles);
@@ -113,6 +121,40 @@ public class MinioStorageImpl implements FileStorageService {
         InputStream stream = storageRepository.downloadFile(storagePath);
         String filename = extractObjectName(path);
         return new DownloadDto(filename, stream);
+    }
+
+    @Override
+    public void downloadFolder(String path, OutputStream responseStream) {
+        String storagePath = resolveToStoragePath(path);
+        if (!storageRepository.isObjectExist(storagePath)) {
+            throw new FileStorageException("Folder not found");
+        }
+        List<StorageEntityDto> objects = storageRepository.getFolderContentRecursive(storagePath).stream()
+                .filter(storageEntityDto -> !storageEntityDto.isDirectory())
+                .toList();
+        if (objects.isEmpty()) {
+            throw new FileStorageException("Folder is empty");
+        }
+        try (ZipOutputStream zip = new ZipOutputStream(responseStream)) {
+            for (StorageEntityDto object : objects) {
+                writeObjectToZip(object, zip, path);
+            }
+        } catch (ClientAbortException ignored) {}
+        catch (IOException e) {
+            log.error("An error occurred while processing download folder request", e);
+        }
+    }
+
+    private void writeObjectToZip(StorageEntityDto object, ZipOutputStream zip, String rootPath) throws IOException {
+        String relativePath = object.getPath().substring(rootPath.length());
+        ZipEntry zipEntry = new ZipEntry(relativePath);
+        zip.putNextEntry(zipEntry);
+        String fileStoragePath = resolveToStoragePath(object.getPath());
+        try (InputStream fileStream = storageRepository.downloadFile(fileStoragePath)) {
+            byte[] buffer = fileStream.readAllBytes();
+            zip.write(buffer);
+        }
+        zip.closeEntry();
     }
 
     @Override

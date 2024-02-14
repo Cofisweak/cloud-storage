@@ -6,7 +6,9 @@ import com.cofisweak.cloudstorage.utils.PathUtils;
 import com.cofisweak.cloudstorage.web.dto.CreateFolderDto;
 import com.cofisweak.cloudstorage.web.dto.DeleteDto;
 import com.cofisweak.cloudstorage.web.dto.UploadDto;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -14,6 +16,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.io.OutputStream;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 
@@ -59,6 +62,14 @@ public class FolderController {
             redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
         }
         return "redirect:/?path=" + URLEncoder.encode(dto.getPath(), StandardCharsets.UTF_8);
+    }
+
+    @GetMapping(value = "/download", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
+    public void downloadFile(@RequestParam String path, HttpServletResponse response, OutputStream outputStream) {
+        String filename = PathUtils.extractObjectName(path) + ".zip";
+        String encodedFileName = URLEncoder.encode(filename, StandardCharsets.UTF_8);
+        response.setHeader("Content-Disposition", "attachment; filename=" + encodedFileName);
+        fileStorageService.downloadFolder(path, outputStream);
     }
 
     @PostMapping("/delete")

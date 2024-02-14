@@ -140,8 +140,8 @@ public class MinioStorageImpl implements FileStorageService {
             for (StorageEntityDto object : objects) {
                 writeObjectToZip(object, zip, path);
             }
-        } catch (ClientAbortException ignored) {}
-        catch (IOException e) {
+        } catch (ClientAbortException ignored) {
+        } catch (IOException e) {
             log.error("An error occurred while processing download folder request", e);
         }
     }
@@ -186,6 +186,53 @@ public class MinioStorageImpl implements FileStorageService {
     }
 
     @Override
+    public void renameFile(RenameDto dto) {
+        String path = composePath(dto.getPath(), dto.getOldObjectName());
+        String storagePath = resolveToStoragePath(path);
+        if (!storageRepository.isObjectExist(storagePath)) {
+            throw new ObjectNotFoundException("File not found");
+        }
+        String newPath = composePath(dto.getPath(), dto.getNewObjectName());
+        String newStoragePath = resolveToStoragePath(newPath);
+        if (storageRepository.isObjectExist(newStoragePath)) {
+            throw new FileStorageException("File with this name already exist");
+        }
+        storageRepository.copyObject(storagePath, newStoragePath);
+        storageRepository.removeFile(storagePath);
+    }
+
+    @Override
+    public void renameFolder(RenameDto dto) {
+        String path = composePath(dto.getPath(), dto.getOldObjectName()) + "/";
+        String storagePath = resolveToStoragePath(path);
+        if (!storageRepository.isObjectExist(storagePath)) {
+            throw new ObjectNotFoundException("File not found");
+        }
+
+        String newPath = composePath(dto.getPath(), dto.getNewObjectName()) + "/";
+        String newStoragePath = resolveToStoragePath(newPath);
+        if (storageRepository.isObjectExist(newStoragePath)) {
+            throw new FileStorageException("File with this name already exist");
+        }
+
+        copyFolder(storagePath, newStoragePath, path, newPath);
+    }
+
+    private void copyFolder(String storagePath, String newStoragePath, String path, String newPath) {
+        storageRepository.copyObject(storagePath, newStoragePath);
+        for (StorageEntityDto object : storageRepository.getFolderContentRecursive(storagePath)) {
+            String oldObjectPath = object.getPath();
+            String oldObjectStoragePath = resolveToStoragePath(oldObjectPath);
+
+            String newObjectPath = newPath + oldObjectPath.substring(path.length());
+            String newObjectStoragePath = resolveToStoragePath(newObjectPath);
+
+            storageRepository.copyObject(oldObjectStoragePath, newObjectStoragePath);
+        }
+        storageRepository.removeFolder(storagePath);
+    }
+
+    @Override
     public void createUserDirectory(Long userId) {
         String folderName = getUserRootFolderName(userId);
         String storagePath = folderName + "/";
@@ -199,7 +246,7 @@ public class MinioStorageImpl implements FileStorageService {
                 .filter(path -> !path.isBlank())
                 .collect(Collectors.joining("/", "/", ""));
 
-        if(paths[paths.length - 1].endsWith("/")) {
+        if (paths[paths.length - 1].endsWith("/")) {
             resultPath += "/";
         }
 

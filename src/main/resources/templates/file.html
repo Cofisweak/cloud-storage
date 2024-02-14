@@ -25,7 +25,7 @@
                 </svg>
                 Download
             </a>
-            <button class="btn btn-secondary d-flex align-items-center">
+            <button class="btn btn-secondary d-flex align-items-center" data-bs-toggle="modal" data-bs-target="#rename-modal">
                 <svg class="me-1" width="20" height="20" viewBox="0 0 192 192" fill="none">
                     <path
                             d="m104.175 90.97-4.252 38.384 38.383-4.252L247.923 15.427V2.497L226.78-18.646h-12.93zm98.164-96.96 31.671 31.67"
@@ -56,7 +56,28 @@
         </div>
     </div>
 </main>
-
+<div id="rename-modal" class="modal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Rename</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="rename-form" th:action="@{/file/rename}" method="post">
+                <input type="hidden" name="path" th:value="${rootPath}">
+                <input type="hidden" name="oldObjectName" th:value="${file.objectName}">
+                <div class="modal-body">
+                    <label for="rename-input" class="col-form-label">Enter new name: </label>
+                    <input class="form-control" id="rename-input" type="text" name="newObjectName" th:value="${file.objectName}" placeholder="New name">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-primary">Rename</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 <script th:replace="~{fragments/scripts :: theme}"></script>
 </body>
 

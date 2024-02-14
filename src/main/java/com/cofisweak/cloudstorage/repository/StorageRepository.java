@@ -16,4 +16,5 @@ public interface StorageRepository {
     InputStream downloadFile(String path);
     void uploadFiles(List<UploadFile> uploadFiles);
     StorageEntityDto getFile(String storagePath);
+    void copyObject(String oldPath, String newPath);
 }

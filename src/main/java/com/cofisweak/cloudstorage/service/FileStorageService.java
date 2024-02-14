@@ -10,10 +10,12 @@ public interface FileStorageService {
     List<StorageEntityDto> getFolderContent(String path);
     void deleteFolder(DeleteDto dto);
     void upload(UploadDto dto);
+    void renameFolder(RenameDto dto);
     void createUserDirectory(Long userId);
     void deleteFile(DeleteDto dto);
     DownloadDto downloadFile(String path);
     void downloadFolder(String path, OutputStream responseStream);
     List<StorageEntityDto> search(SearchDto dto);
     StorageEntityDto getFile(String path);
+    void renameFile(RenameDto dto);
 }

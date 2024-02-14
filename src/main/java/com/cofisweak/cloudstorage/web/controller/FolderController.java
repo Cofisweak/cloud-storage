@@ -6,6 +6,7 @@ import com.cofisweak.cloudstorage.utils.ControllerUtils;
 import com.cofisweak.cloudstorage.utils.PathUtils;
 import com.cofisweak.cloudstorage.web.dto.CreateFolderDto;
 import com.cofisweak.cloudstorage.web.dto.DeleteDto;
+import com.cofisweak.cloudstorage.web.dto.RenameDto;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
@@ -51,7 +52,7 @@ public class FolderController {
     }
 
     @GetMapping(value = "/download", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
-    public void downloadFile(@RequestParam String path, HttpServletResponse response, OutputStream outputStream) {
+    public void downloadFolder(@RequestParam String path, HttpServletResponse response, OutputStream outputStream) {
         String filename = PathUtils.extractObjectName(path) + ".zip";
         String encodedFileName = URLEncoder.encode(filename, StandardCharsets.UTF_8);
         response.setHeader("Content-Disposition", "attachment; filename=" + encodedFileName);
@@ -75,6 +76,29 @@ public class FolderController {
 
         try {
             fileStorageService.deleteFolder(dto);
+        } catch (FileStorageException e) {
+            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
+        }
+        return "redirect:/?path=" + URLEncoder.encode(dto.getPath(), StandardCharsets.UTF_8);
+    }
+
+    @PostMapping("/rename")
+    public String renameFolder(@ModelAttribute("renameDto") @Validated RenameDto dto,
+                             BindingResult bindingResult,
+                             RedirectAttributes redirectAttributes) {
+        if (bindingResult.hasErrors()) {
+            String errorMessage = ControllerUtils.mapValidationResultToErrorMessage(bindingResult);
+            redirectAttributes.addFlashAttribute("errorMessage", errorMessage);
+
+            if (bindingResult.hasFieldErrors("path")) {
+                return "redirect:/";
+            } else {
+                return "redirect:/?path=" + URLEncoder.encode(dto.getPath(), StandardCharsets.UTF_8);
+            }
+        }
+
+        try {
+            fileStorageService.renameFolder(dto);
         } catch (FileStorageException e) {
             redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
         }

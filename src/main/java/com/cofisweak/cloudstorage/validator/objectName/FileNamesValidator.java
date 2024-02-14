@@ -12,7 +12,7 @@ public class FileNamesValidator implements ConstraintValidator<FileNames, List<M
     @Override
     public boolean isValid(List<MultipartFile> files, ConstraintValidatorContext constraintValidatorContext) {
         for (MultipartFile file : files) {
-            Pattern pattern = Pattern.compile("^[^\\\\!(){}\\[\\]+*`|~^%#&]*$");
+            Pattern pattern = Pattern.compile("^[^\\\\!{}\\[\\]*|~^%#&]*$");
             String originalFilename = file.getOriginalFilename();
             if (originalFilename == null) {
                 return false;

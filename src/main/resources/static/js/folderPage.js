@@ -115,3 +115,13 @@ fileInput.addEventListener('change', () => {
     if (fileInput.files.length === 0) return;
     fileUploadForm.submit();
 })
+
+function openRenameModal (baseUrl, oldName) {
+    const renameForm = document.getElementById('rename-form');
+    const renameOldName = document.getElementById('rename-old-name');
+    const renameInput = document.getElementById('rename-input');
+    renameOldName.setAttribute('value', oldName);
+    renameInput.setAttribute('value', oldName);
+    const actionUrl = baseUrl + '/rename';
+    renameForm.setAttribute('action', actionUrl);
+}

@@ -163,6 +163,24 @@ public class MinioRepository implements StorageRepository {
         }
     }
 
+    @Override
+    public void copyObject(String oldPath, String newPath) {
+        try {
+            CopySource source = CopySource.builder()
+                    .bucket(bucket)
+                    .object(oldPath)
+                    .build();
+            CopyObjectArgs args = CopyObjectArgs.builder()
+                    .bucket(bucket)
+                    .object(newPath)
+                    .source(source)
+                    .build();
+            minioClient.copyObject(args);
+        } catch (Exception e) {
+            throw new FileStorageException("Unable to copy object", e);
+        }
+    }
+
     private List<SnowballObject> getSnowballObjects(List<UploadFile> uploadFiles) throws IOException {
         List<SnowballObject> objects = new ArrayList<>();
         for (UploadFile file : uploadFiles) {

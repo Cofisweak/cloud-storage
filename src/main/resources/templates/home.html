@@ -44,7 +44,8 @@
         <div class="d-flex align-items-center gap-2 flex-wrap p-2">
             <a class="btn px-2 border" th:href="@{/(path=${rootPath})}" th:if="${!rootPath.equals(currentPath)}">
                 <svg width="20" height="20" viewBox="2 2 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M6 12H18M6 12L11 7M6 12L11 17" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M6 12H18M6 12L11 7M6 12L11 17" stroke="currentColor" stroke-width="2"
+                          stroke-linecap="round" stroke-linejoin="round"/>
                 </svg>
             </a>
             <button type="button" class="btn border d-flex align-items-center gap-1" id="createFolderDropdown"
@@ -59,7 +60,7 @@
                 New folder
             </button>
             <div class="dropdown-menu p-3" aria-labelledby="createFolderDropdown">
-                <form th:action="@{/create}" method="post">
+                <form th:action="@{/folder/create}" method="post">
                     <div class="form-group">
                         <label for="folderNameInput">Enter folder name:</label>
                         <input name="folderName" class="form-control mt-2" id="folderNameInput" type="text"
@@ -85,10 +86,12 @@
             <div class="dropdown-menu p-2" aria-labelledby="upload">
                 <div id="upload-menu" class="d-flex align-items-center justify-content-center flex-column mx-4 my-2">
                     <div class="d-flex align-items-center justify-content-center flex-wrap gap-2 text-center">
-                        <form th:action="@{/upload}" id="folder-upload-form" method="post" enctype="multipart/form-data">
+                        <form th:action="@{/upload}" id="folder-upload-form" method="post"
+                              enctype="multipart/form-data">
                             <input name="path" type="hidden" th:value="${currentPath}">
                             <label class="upload-block">
-                                <input class="upload-input" type="file" name="files" id="folder-input" multiple webkitdirectory
+                                <input class="upload-input" type="file" name="files" id="folder-input" multiple
+                                       webkitdirectory
                                        directory>
                                 <span class="upload-input-button btn btn-primary">Upload folder</span>
                             </label>
@@ -154,7 +157,8 @@
                             <a th:href="@{${onClickUrl}(path=*{path})}" class="dropdown-item">Open</a>
                         </li>
                         <li>
-                            <a th:href="@{${onClickUrl}(path=*{path})}" target="_blank" class="dropdown-item">Open in new Tab</a>
+                            <a th:href="@{${onClickUrl}(path=*{path})}" target="_blank" class="dropdown-item">Open in
+                                new Tab</a>
                         </li>
                         <li>
                             <hr class="dropdown-divider">
@@ -167,7 +171,10 @@
                             <hr class="dropdown-divider">
                         </li>
                         <li>
-                            <button class="dropdown-item" type="button">Rename</button>
+                            <button class="dropdown-item" type="button" data-bs-toggle="modal" data-bs-target="#rename-modal"
+                                    th:attr="onclick=|openRenameModal('@{${baseUrl}}', '*{objectName}')|">
+                                Rename
+                            </button>
                         </li>
                         <li>
                             <form th:action="@{${baseUrl} + '/delete'}" method="post">
@@ -182,7 +189,8 @@
         </div>
     </div>
 </main>
-<div id="alert" th:if="${errorMessage}" class="toast position-absolute bottom-0 end-0" role="alert" aria-live="assertive"
+<div id="alert" th:if="${errorMessage}" class="toast position-absolute bottom-0 end-0" role="alert"
+     aria-live="assertive"
      aria-atomic="true">
     <div class="toast-header">
         <strong class="me-auto">Error</strong>
@@ -190,6 +198,29 @@
     </div>
     <div class="toast-body error-color" th:utext="${errorMessage}">
         error text
+    </div>
+</div>
+<div id="rename-modal" class="modal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Rename</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="rename-form" method="post">
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                <input type="hidden" name="path" th:value="${currentPath}">
+                <input type="hidden" name="oldObjectName" id="rename-old-name">
+                <div class="modal-body">
+                    <label for="rename-input" class="col-form-label">Enter new name: </label>
+                    <input class="form-control" id="rename-input" type="text" name="newObjectName" placeholder="New name">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-primary">Rename</button>
+                </div>
+            </form>
+        </div>
     </div>
 </div>
 <script th:replace="~{fragments/scripts :: theme}"></script>

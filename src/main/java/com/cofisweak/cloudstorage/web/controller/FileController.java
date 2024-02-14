@@ -6,6 +6,7 @@ import com.cofisweak.cloudstorage.utils.ControllerUtils;
 import com.cofisweak.cloudstorage.utils.PathUtils;
 import com.cofisweak.cloudstorage.web.dto.DeleteDto;
 import com.cofisweak.cloudstorage.web.dto.DownloadDto;
+import com.cofisweak.cloudstorage.web.dto.RenameDto;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.ByteArrayResource;
@@ -66,6 +67,29 @@ public class FileController {
 
         try {
             fileStorageService.deleteFile(dto);
+        } catch (FileStorageException e) {
+            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
+        }
+        return "redirect:/?path=" + URLEncoder.encode(dto.getPath(), StandardCharsets.UTF_8);
+    }
+
+    @PostMapping("/rename")
+    public String renameFile(@ModelAttribute("renameDto") @Validated RenameDto dto,
+                             BindingResult bindingResult,
+                             RedirectAttributes redirectAttributes) {
+        if (bindingResult.hasErrors()) {
+            String errorMessage = ControllerUtils.mapValidationResultToErrorMessage(bindingResult);
+            redirectAttributes.addFlashAttribute("errorMessage", errorMessage);
+
+            if (bindingResult.hasFieldErrors("path")) {
+                return "redirect:/";
+            } else {
+                return "redirect:/?path=" + URLEncoder.encode(dto.getPath(), StandardCharsets.UTF_8);
+            }
+        }
+
+        try {
+            fileStorageService.renameFile(dto);
         } catch (FileStorageException e) {
             redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
         }

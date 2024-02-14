@@ -137,7 +137,7 @@ public class MinioStorageImpl implements FileStorageService {
     public StorageEntityDto getFile(String path) {
         String storagePath = resolveToStoragePath(path);
         if (!storageRepository.isObjectExist(storagePath)) {
-            throw new FileStorageException("File not found");
+            throw new ObjectNotFoundException("File not found");
         }
         return storageRepository.getFile(storagePath);
     }

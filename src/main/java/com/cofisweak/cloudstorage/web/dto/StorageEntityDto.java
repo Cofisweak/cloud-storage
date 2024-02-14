@@ -12,6 +12,7 @@ import lombok.NoArgsConstructor;
 public class StorageEntityDto {
     private String objectName;
     private String path;
+    private String storagePath;
     private boolean isDirectory;
     private String size;
     private String createdAt;

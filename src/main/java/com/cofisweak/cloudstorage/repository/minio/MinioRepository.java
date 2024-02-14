@@ -4,7 +4,6 @@ import com.cofisweak.cloudstorage.domain.UploadFile;
 import com.cofisweak.cloudstorage.domain.exception.FileStorageException;
 import com.cofisweak.cloudstorage.mapper.MinioEntityMapper;
 import com.cofisweak.cloudstorage.repository.StorageRepository;
-import com.cofisweak.cloudstorage.utils.PathUtils;
 import com.cofisweak.cloudstorage.web.dto.StorageEntityDto;
 import io.minio.*;
 import io.minio.errors.ErrorResponseException;
@@ -19,7 +18,6 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 
 @Repository
@@ -48,23 +46,19 @@ public class MinioRepository implements StorageRepository {
 
     @Override
     public void removeFolder(String path) {
-        List<StorageEntityDto> objects = getFolderContent(path, true, true);
-        removeObjects(objects);
+        List<DeleteObject> deleteObjects =
+                getFolderContent(path, true, true).stream()
+                .map(StorageEntityDto::getStoragePath)
+                .map(DeleteObject::new)
+                .toList();
+        removeObjects(deleteObjects);
     }
 
-    @Override
-    public void removeObjects(List<StorageEntityDto> objects) {
+    private void removeObjects(List<DeleteObject> objects) {
         try {
-            List<DeleteObject> deleteObjects = objects.stream()
-                    .sorted(Comparator.comparing(object -> !object.isDirectory()))
-                    .map(StorageEntityDto::getPath)
-                    .map(PathUtils::resolveToStoragePath)
-                    .map(DeleteObject::new)
-                    .toList();
-
             RemoveObjectsArgs args = RemoveObjectsArgs.builder()
                     .bucket(bucket)
-                    .objects(deleteObjects)
+                    .objects(objects)
                     .build();
             for (Result<DeleteError> removeObject : minioClient.removeObjects(args)) {
                 removeObject.get();

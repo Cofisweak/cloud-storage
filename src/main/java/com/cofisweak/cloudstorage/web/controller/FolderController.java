@@ -2,6 +2,7 @@ package com.cofisweak.cloudstorage.web.controller;
 
 import com.cofisweak.cloudstorage.domain.exception.FileStorageException;
 import com.cofisweak.cloudstorage.service.FileStorageService;
+import com.cofisweak.cloudstorage.utils.ControllerUtils;
 import com.cofisweak.cloudstorage.utils.PathUtils;
 import com.cofisweak.cloudstorage.web.dto.CreateFolderDto;
 import com.cofisweak.cloudstorage.web.dto.DeleteDto;
@@ -20,8 +21,6 @@ import java.io.OutputStream;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 
-import static com.cofisweak.cloudstorage.utils.Utils.createBreadcrumbsFromPath;
-import static com.cofisweak.cloudstorage.utils.Utils.mapValidationResultToErrorMessage;
 
 @Controller
 @RequiredArgsConstructor
@@ -34,7 +33,7 @@ public class FolderController {
                        @RequestParam(required = false, defaultValue = "/") String path,
                        @CookieValue(value = "theme", defaultValue = "light") String theme) {
         model.addAttribute("objects", fileStorageService.getFolderContent(path));
-        model.addAttribute("breadcrumbs", createBreadcrumbsFromPath(path));
+        model.addAttribute("breadcrumbs", ControllerUtils.createBreadcrumbsFromPath(path));
         model.addAttribute("currentPath", path);
         model.addAttribute("rootPath", PathUtils.getRootFolder(path));
         model.addAttribute("theme", theme);
@@ -46,7 +45,7 @@ public class FolderController {
                                BindingResult bindingResult,
                                RedirectAttributes redirectAttributes) {
         if (bindingResult.hasErrors()) {
-            String errorMessage = mapValidationResultToErrorMessage(bindingResult);
+            String errorMessage = ControllerUtils.mapValidationResultToErrorMessage(bindingResult);
             redirectAttributes.addFlashAttribute("errorMessage", errorMessage);
 
             if (bindingResult.hasFieldErrors("path")) {
@@ -77,7 +76,7 @@ public class FolderController {
                                BindingResult bindingResult,
                                RedirectAttributes redirectAttributes) {
         if (bindingResult.hasErrors()) {
-            String errorMessage = mapValidationResultToErrorMessage(bindingResult);
+            String errorMessage = ControllerUtils.mapValidationResultToErrorMessage(bindingResult);
             redirectAttributes.addFlashAttribute("errorMessage", errorMessage);
 
             if (bindingResult.hasFieldErrors("path")) {
@@ -100,7 +99,7 @@ public class FolderController {
                          BindingResult bindingResult,
                          RedirectAttributes redirectAttributes) {
         if (bindingResult.hasErrors()) {
-            String errorMessage = mapValidationResultToErrorMessage(bindingResult);
+            String errorMessage = ControllerUtils.mapValidationResultToErrorMessage(bindingResult);
             redirectAttributes.addFlashAttribute("errorMessage", errorMessage);
 
             if (bindingResult.hasFieldErrors("path")) {

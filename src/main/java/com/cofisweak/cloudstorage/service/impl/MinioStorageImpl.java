@@ -1,14 +1,17 @@
 package com.cofisweak.cloudstorage.service.impl;
 
 import com.cofisweak.cloudstorage.domain.UploadFile;
+import com.cofisweak.cloudstorage.domain.User;
 import com.cofisweak.cloudstorage.domain.exception.FileStorageException;
 import com.cofisweak.cloudstorage.domain.exception.ObjectNotFoundException;
 import com.cofisweak.cloudstorage.repository.StorageRepository;
 import com.cofisweak.cloudstorage.service.FileStorageService;
+import com.cofisweak.cloudstorage.utils.PathUtils;
 import com.cofisweak.cloudstorage.web.dto.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.catalina.connector.ClientAbortException;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -19,8 +22,6 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
-
-import static com.cofisweak.cloudstorage.utils.PathUtils.*;
 
 @Service
 @RequiredArgsConstructor
@@ -68,8 +69,8 @@ public class MinioStorageImpl implements FileStorageService {
             String localPath = Optional.ofNullable(file.getOriginalFilename())
                     .orElseThrow(() -> new FileStorageException("Unable to upload file. File name isn't valid"));
 
-            String localParentFolder = getRootFolder(localPath);
-            String filename = extractObjectName(localPath);
+            String localParentFolder = PathUtils.getRootFolder(localPath);
+            String filename = PathUtils.extractObjectName(localPath);
 
             foldersToCheck.addAll(getAllSubfolderPaths(dto.getPath(), localParentFolder));
 
@@ -93,7 +94,7 @@ public class MinioStorageImpl implements FileStorageService {
             String composedPath = composePath(path, localParentFolder);
             String storagePath = resolveToStoragePath(composedPath);
             result.add(storagePath);
-            localParentFolder = getRootFolder(localParentFolder);
+            localParentFolder = PathUtils.getRootFolder(localParentFolder);
         }
         return result;
     }
@@ -119,7 +120,7 @@ public class MinioStorageImpl implements FileStorageService {
     public DownloadDto downloadFile(String path) {
         String storagePath = resolveToStoragePath(path);
         InputStream stream = storageRepository.downloadFile(storagePath);
-        String filename = extractObjectName(path);
+        String filename = PathUtils.extractObjectName(path);
         return new DownloadDto(filename, stream);
     }
 
@@ -189,5 +190,30 @@ public class MinioStorageImpl implements FileStorageService {
         String folderName = getUserRootFolderName(userId);
         String storagePath = folderName + "/";
         storageRepository.createFolder(storagePath);
+    }
+
+    private String composePath(String... paths) {
+        String resultPath = Arrays.stream(paths)
+                .map(path -> path.split("/"))
+                .flatMap(Arrays::stream)
+                .filter(path -> !path.isBlank())
+                .collect(Collectors.joining("/", "/", ""));
+
+        if(paths[paths.length - 1].endsWith("/")) {
+            resultPath += "/";
+        }
+
+        return resultPath;
+    }
+
+    private String resolveToStoragePath(String path) {
+        Long userId = ((User) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getId();
+        String userRootFolderName = getUserRootFolderName(userId);
+        return userRootFolderName + path;
+    }
+
+    private String getUserRootFolderName(Long id) {
+        String pattern = "user-%d-files";
+        return pattern.formatted(id);
     }
 }

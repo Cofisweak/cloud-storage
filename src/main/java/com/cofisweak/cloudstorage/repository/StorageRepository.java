@@ -9,7 +9,6 @@ import java.util.List;
 public interface StorageRepository {
     void createFolder(String path);
     void removeFolder(String path);
-    void removeObjects(List<StorageEntityDto> objects);
     void removeFile(String path);
     boolean isObjectExist(String path);
     List<StorageEntityDto> getFolderContent(String path);

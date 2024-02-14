@@ -1,5 +1,6 @@
 package com.cofisweak.cloudstorage.mapper;
 
+import com.cofisweak.cloudstorage.utils.PathUtils;
 import com.cofisweak.cloudstorage.web.dto.StorageEntityDto;
 import io.minio.Result;
 import io.minio.messages.Item;
@@ -12,9 +13,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
-
-import static com.cofisweak.cloudstorage.utils.PathUtils.extractObjectName;
-import static com.cofisweak.cloudstorage.utils.PathUtils.trimUserFolder;
 
 @Component
 public class MinioEntityMapper {
@@ -38,12 +36,18 @@ public class MinioEntityMapper {
 
     public StorageEntityDto map(Item item) {
         return StorageEntityDto.builder()
-                .objectName(extractObjectName(item.objectName()))
+                .objectName(PathUtils.extractObjectName(item.objectName()))
+                .storagePath(item.objectName())
                 .path(trimUserFolder(item.objectName()))
                 .isDirectory(item.objectName().endsWith("/"))
                 .size(stringifySize(item.size()))
                 .createdAt(stringifyCreatedAt(item))
                 .build();
+    }
+
+    private String trimUserFolder(String path) {
+        int index = path.indexOf("/");
+        return path.substring(index);
     }
 
     private String stringifyCreatedAt(Item item) {

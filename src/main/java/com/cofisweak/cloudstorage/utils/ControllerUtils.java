@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @UtilityClass
-public class Utils {
+public class ControllerUtils {
 
     public static String mapValidationResultToErrorMessage(BindingResult bindingResult) {
         return bindingResult.getFieldErrors().stream()

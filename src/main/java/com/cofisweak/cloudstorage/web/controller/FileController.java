@@ -2,6 +2,7 @@ package com.cofisweak.cloudstorage.web.controller;
 
 import com.cofisweak.cloudstorage.domain.exception.FileStorageException;
 import com.cofisweak.cloudstorage.service.FileStorageService;
+import com.cofisweak.cloudstorage.utils.ControllerUtils;
 import com.cofisweak.cloudstorage.utils.PathUtils;
 import com.cofisweak.cloudstorage.web.dto.DeleteDto;
 import com.cofisweak.cloudstorage.web.dto.DownloadDto;
@@ -21,9 +22,6 @@ import java.io.IOException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 
-import static com.cofisweak.cloudstorage.utils.Utils.createBreadcrumbsFromPath;
-import static com.cofisweak.cloudstorage.utils.Utils.mapValidationResultToErrorMessage;
-
 @Controller
 @RequestMapping("/file")
 @RequiredArgsConstructor
@@ -36,7 +34,7 @@ public class FileController {
                        @RequestParam(required = false, defaultValue = "/") String path,
                        @CookieValue(value = "theme", defaultValue = "light") String theme) {
         model.addAttribute("file", fileStorageService.getFile(path));
-        model.addAttribute("breadcrumbs", createBreadcrumbsFromPath(path));
+        model.addAttribute("breadcrumbs", ControllerUtils.createBreadcrumbsFromPath(path));
         model.addAttribute("rootPath", PathUtils.getRootFolder(path));
         model.addAttribute("theme", theme);
         return "file";
@@ -56,7 +54,7 @@ public class FileController {
                              BindingResult bindingResult,
                              RedirectAttributes redirectAttributes) {
         if (bindingResult.hasErrors()) {
-            String errorMessage = mapValidationResultToErrorMessage(bindingResult);
+            String errorMessage = ControllerUtils.mapValidationResultToErrorMessage(bindingResult);
             redirectAttributes.addFlashAttribute("errorMessage", errorMessage);
 
             if (bindingResult.hasFieldErrors("path")) {

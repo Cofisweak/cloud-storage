@@ -170,9 +170,6 @@
                             <button class="dropdown-item" type="button">Rename</button>
                         </li>
                         <li>
-                            <button class="dropdown-item" type="button">Select</button>
-                        </li>
-                        <li>
                             <form th:action="@{${baseUrl} + '/delete'}" method="post">
                                 <input type="hidden" name="path" th:value="${currentPath}">
                                 <input type="hidden" name="objectName" th:value="*{objectName}">

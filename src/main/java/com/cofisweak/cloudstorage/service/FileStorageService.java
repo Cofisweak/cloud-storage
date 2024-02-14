@@ -12,6 +12,6 @@ public interface FileStorageService {
     void createUserDirectory(Long userId);
     void deleteFile(DeleteDto dto);
     DownloadDto downloadFile(String path);
-    List<StorageEntityDto> search(String path, String query);
+    List<StorageEntityDto> search(SearchDto dto);
     StorageEntityDto getFile(String path);
 }

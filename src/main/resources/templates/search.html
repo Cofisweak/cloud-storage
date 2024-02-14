@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+    <link rel="stylesheet" th:href="@{/static/css/style.css}">
+    <link rel="shortcut icon" th:href="@{/static/favicon.ico}" type="image/x-icon">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"
+            integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL"
+            crossorigin="anonymous"></script>
+    <title>Search | Cloud storage</title>
+</head>
+
+<body class="d-flex flex-column min-vh-100" th:attr="data-bs-theme=${theme}">
+<div th:replace="~{fragments/header :: header}"></div>
+<main class="container">
+    <div class="d-flex align-items-start gap-3 flex-column mt-3">
+        <a th:href="@{/}" class="btn border d-flex align-items-center gap-2">
+            <svg fill="currentColor" width="20" height="20" viewBox="0 0 32 32">
+                <path
+                        d="M31.772 16.043l-15.012-15.724c-0.189-0.197-0.449-0.307-0.721-0.307s-0.533 0.111-0.722 0.307l-15.089 15.724c-0.383 0.398-0.369 1.031 0.029 1.414 0.399 0.382 1.031 0.371 1.414-0.029l1.344-1.401v14.963c0 0.552 0.448 1 1 1h6.986c0.551 0 0.998-0.445 1-0.997l0.031-9.989h7.969v9.986c0 0.552 0.448 1 1 1h6.983c0.552 0 1-0.448 1-1v-14.968l1.343 1.407c0.197 0.204 0.459 0.308 0.722 0.308 0.249 0 0.499-0.092 0.692-0.279 0.398-0.382 0.411-1.015 0.029-1.413zM26.985 14.213v15.776h-4.983v-9.986c0-0.552-0.448-1-1-1h-9.965c-0.551 0-0.998 0.445-1 0.997l-0.031 9.989h-4.989v-15.777c0-0.082-0.013-0.162-0.032-0.239l11.055-11.52 10.982 11.507c-0.021 0.081-0.036 0.165-0.036 0.252z">
+                </path>
+            </svg>
+            Home
+        </a>
+        <h5 class="m-0">
+            Search result (<span th:text="${foundObjects.size()}">1</span>) by query: <span th:text="${searchDto.query}">summer22</span>
+        </h5>
+    </div>
+    <div class="search-result d-flex flex-column w-100 border rounded-2 mt-4 mb-1">
+        <div th:if="${foundObjects.isEmpty()}" class="text-center p-3 fs-5">
+            <div class="d-flex align-items-center flex-column">
+                <img width="200" th:src="@{/static/images/cloud.svg}" alt="cloud icon">
+                <span class="fw-bold">Nothing was found</span>
+            </div>
+        </div>
+        <div th:unless="${foundObjects.isEmpty()}">
+            <div class="search-item px-3 py-3">
+                <div class="fw-bold">Object</div>
+                <div class="fw-bold justify-self-center">Upload date</div>
+                <div class="fw-bold justify-self-center">Size</div>
+            </div>
+        </div>
+        <div th:each="object : ${foundObjects}" th:object="${object}"
+             th:with="baseUrl=*{isDirectory()}? '/' : '/file'"
+             th:attr="ondblclick=|window.location.href='@{${baseUrl}(path=*{path})}'|, title=*{path}"
+             class="search-item-wrapper border-top">
+            <div class="search-item px-3 py-2">
+                <div class="d-flex align-items-center gap-2">
+                    <img th:if="*{isDirectory}" class="d-block" width="24" height="24" th:src="@{/static/images/folder.svg}" alt="object icon">
+                    <img th:unless="*{isDirectory}" class="d-block" width="24" height="24" th:src="@{/static/images/file.svg}" alt="object icon">
+                    <span class="d-block" th:text="*{objectName}">object name</span>
+                </div>
+                <div class="justify-self-center" th:text="*{isDirectory} ? '' : *{createdAt}">2024-12-12 12:21</div>
+                <div class="justify-self-center" th:text="*{isDirectory} ? '' : *{size}">18,1MB</div>
+                <a class="btn btn-secondary justify-self-center" th:href="@{${baseUrl}(path=*{path})}">Open</a>
+            </div>
+        </div>
+    </div>
+</main>
+
+<script th:replace="~{fragments/scripts :: theme}"></script>
+</body>
+
+</html>

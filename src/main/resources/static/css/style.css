@@ -178,7 +178,7 @@ body {
 .search-item {
     width: 100%;
     display: grid;
-    grid-template-columns: 8fr 2fr 1fr 65px;
+    grid-template-columns: 1fr 170px 60px 65px;
     grid-auto-flow: column;
     align-items: center;
     gap: 1rem;

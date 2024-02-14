@@ -29,18 +29,18 @@
             Search
         </button>
         <div class="dropdown-menu dropdown-menu-end p-3" aria-labelledby="search">
-            <form th:action="@{/search}" method="post">
+            <form th:action="@{/search}" method="get">
                 <div class="form-group">
                     <label for="searchInput">Enter folder or file name:</label>
-                    <input name="folderName" class="form-control mt-2" id="searchInput" type="text"
+                    <input name="query" class="form-control mt-2" id="searchInput" type="text"
                            placeholder="ex. Cats" required>
                 </div>
                 <div class="form-group mt-2 d-flex align-items-center justify-content-between gap-2 flex-wrap">
                     <div>
                         <label for="searcher-type" class="">Search in</label>
-                        <select id="searcher-type" class="border-0 bg-body shadow-none outline-none">
-                            <option selected>Here</option>
-                            <option>Root</option>
+                        <select name="path" id="searcher-type" class="border-0 bg-body shadow-none outline-none">
+                            <option th:value="${currentPath}" selected>Here</option>
+                            <option value="/">Root</option>
                         </select>
                     </div>
                     <button type="submit" class="btn btn-primary btn-sm">Search</button>

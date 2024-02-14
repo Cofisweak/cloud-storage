@@ -116,8 +116,21 @@ public class MinioStorageImpl implements FileStorageService {
     }
 
     @Override
-    public List<StorageEntityDto> search(String path, String query) {
-        throw new UnsupportedOperationException();
+    public List<StorageEntityDto> search(SearchDto dto) {
+        String storagePath = resolveToStoragePath(dto.getPath());
+        if (!storageRepository.isObjectExist(storagePath)) {
+            throw new FileStorageException("Folder not found");
+        }
+        return storageRepository.getFolderContentRecursive(storagePath).stream()
+                .filter(object -> isObjectNameContainsQuery(object.getObjectName(), dto.getQuery()))
+                .sorted(Comparator
+                        .comparing(StorageEntityDto::isDirectory).reversed()
+                        .thenComparing(StorageEntityDto::getObjectName))
+                .collect(Collectors.toList());
+    }
+
+    private boolean isObjectNameContainsQuery(String objectName, String query) {
+        return objectName.toLowerCase().contains(query.toLowerCase());
     }
 
     @Override

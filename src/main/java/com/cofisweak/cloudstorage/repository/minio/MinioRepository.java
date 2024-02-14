@@ -108,10 +108,6 @@ public class MinioRepository implements StorageRepository {
         return getFolderContent(path, false, false);
     }
 
-    private List<StorageEntityDto> getFolderContentIncludeSelf(String path) {
-        return getFolderContent(path, false, true);
-    }
-
     @Override
     public List<StorageEntityDto> getFolderContentRecursive(String path) {
         return getFolderContent(path, true, false);

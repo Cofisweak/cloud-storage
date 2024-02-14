@@ -59,7 +59,7 @@
                 New folder
             </button>
             <div class="dropdown-menu p-3" aria-labelledby="createFolderDropdown">
-                <form th:action="@{/createFolder}" method="post">
+                <form th:action="@{/create}" method="post">
                     <div class="form-group">
                         <label for="folderNameInput">Enter folder name:</label>
                         <input name="folderName" class="form-control mt-2" id="folderNameInput" type="text"
@@ -124,8 +124,8 @@
         </div>
         <div th:unless="${objects.isEmpty()}" class="explorer text-center p-3 border-top">
             <div th:each="object: ${objects}" th:object="${object}"
-                 th:with="baseUrl=*{isDirectory()}? '' : '/file'"
-                 th:attr="path=*{path},baseUrl=@{${baseUrl}}"
+                 th:with="baseUrl=*{isDirectory()}? '/folder' : '/file', onClickUrl=*{isDirectory()}? '/' : '/file'"
+                 th:attr="ondblclick=|onDblClick('@{${onClickUrl}(path=*{path})}')|"
                  class="explorer-item d-flex align-items-center justify-content-center flex-column">
                 <img th:if="*{isDirectory}" th:src="@{/static/images/folder.svg}" class="item-icon d-block"
                      alt="object icon">
@@ -151,11 +151,10 @@
                     </button>
                     <ul class="dropdown-menu">
                         <li>
-                            <a th:href="@{${baseUrl}(path=*{path})}" class="dropdown-item">Open</a>
+                            <a th:href="@{${onClickUrl}(path=*{path})}" class="dropdown-item">Open</a>
                         </li>
                         <li>
-                            <a th:href="@{${baseUrl}(path=*{path})}" target="_blank" class="dropdown-item"
-                               type="button">Open in new tab</a>
+                            <a th:href="@{${onClickUrl}(path=*{path})}" target="_blank" class="dropdown-item">Open in new Tab</a>
                         </li>
                         <li>
                             <hr class="dropdown-divider">

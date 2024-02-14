@@ -81,6 +81,11 @@ const hideDropdowns = () => {
     });
 }
 
+const onDblClick = (url) => {
+    window.getSelection().removeAllRanges();
+    window.location.href = url;
+};
+
 objects.forEach(object => {
     const dropdown = new bootstrap.Dropdown(object.querySelector('.item-dots'));
     objectDropdowns.push(dropdown);
@@ -89,13 +94,9 @@ objects.forEach(object => {
         hideDropdowns();
         dropdown.toggle();
     })
-    const path = object.getAttribute('path');
-    const baseUrl = object.getAttribute('baseUrl') || '';
-    object.addEventListener('dblclick', () => {
-        window.getSelection().removeAllRanges();
-        window.location.href = baseUrl + '?path=' + path;
-    })
+
 });
+
 ;[].slice
     .call(document.querySelectorAll('.toast'))
     .map((toastEl) => new bootstrap.Toast(toastEl))

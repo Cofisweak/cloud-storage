@@ -22,10 +22,12 @@ spring:
       max-request-size: 500MB
   session:
     timeout: 2D
-
 server:
   tomcat:
     max-swallow-size: -1
+  servlet:
+    context-path: ${CONTEXT_PATH:/}
+  port: ${PORT:8080}
 
 minio:
   bucket: ${MINIO_BUCKET}

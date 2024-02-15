@@ -122,6 +122,7 @@ function openRenameModal (baseUrl, oldName) {
     const renameInput = document.getElementById('rename-input');
     renameOldName.setAttribute('value', oldName);
     renameInput.setAttribute('value', oldName);
-    const actionUrl = baseUrl + '/rename';
+    const currentPath = new URLSearchParams(window.location.search).get('path');
+    const actionUrl = baseUrl + '/rename?path=' + currentPath;
     renameForm.setAttribute('action', actionUrl);
 }

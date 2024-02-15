@@ -30,25 +30,20 @@ public class FolderController {
 
     @PostMapping("/create")
     public String createFolder(@ModelAttribute("createFolderDto") @Validated CreateFolderDto dto,
-                               BindingResult bindingResult,
+                               BindingResult bindingResult, @RequestParam("path") String path,
                                RedirectAttributes redirectAttributes) {
         if (bindingResult.hasErrors()) {
             String errorMessage = ControllerUtils.mapValidationResultToErrorMessage(bindingResult);
             redirectAttributes.addFlashAttribute("errorMessage", errorMessage);
-
-            if (bindingResult.hasFieldErrors("path")) {
-                return "redirect:/";
-            } else {
-                return "redirect:/?path=" + URLEncoder.encode(dto.getPath(), StandardCharsets.UTF_8);
-            }
+            return "redirect:/?path=" + URLEncoder.encode(path, StandardCharsets.UTF_8);
         }
 
         try {
-            fileStorageService.createFolder(dto);
+            fileStorageService.createFolder(path, dto.getFolderName());
         } catch (FileStorageException e) {
             redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
         }
-        return "redirect:/?path=" + URLEncoder.encode(dto.getPath(), StandardCharsets.UTF_8);
+        return "redirect:/?path=" + URLEncoder.encode(path, StandardCharsets.UTF_8);
     }
 
     @GetMapping(value = "/download", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
@@ -61,47 +56,37 @@ public class FolderController {
 
     @PostMapping("/delete")
     public String deleteFolder(@ModelAttribute("deleteDto") @Validated DeleteDto dto,
-                               BindingResult bindingResult,
+                               BindingResult bindingResult, @RequestParam("path") String path,
                                RedirectAttributes redirectAttributes) {
         if (bindingResult.hasErrors()) {
             String errorMessage = ControllerUtils.mapValidationResultToErrorMessage(bindingResult);
             redirectAttributes.addFlashAttribute("errorMessage", errorMessage);
-
-            if (bindingResult.hasFieldErrors("path")) {
-                return "redirect:/";
-            } else {
-                return "redirect:/?path=" + URLEncoder.encode(dto.getPath(), StandardCharsets.UTF_8);
-            }
+            return "redirect:/?path=" + URLEncoder.encode(path, StandardCharsets.UTF_8);
         }
 
         try {
-            fileStorageService.deleteFolder(dto);
+            fileStorageService.deleteFolder(path, dto.getObjectName());
         } catch (FileStorageException e) {
             redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
         }
-        return "redirect:/?path=" + URLEncoder.encode(dto.getPath(), StandardCharsets.UTF_8);
+        return "redirect:/?path=" + URLEncoder.encode(path, StandardCharsets.UTF_8);
     }
 
     @PostMapping("/rename")
     public String renameFolder(@ModelAttribute("renameDto") @Validated RenameDto dto,
-                             BindingResult bindingResult,
+                             BindingResult bindingResult, @RequestParam("path") String path,
                              RedirectAttributes redirectAttributes) {
         if (bindingResult.hasErrors()) {
             String errorMessage = ControllerUtils.mapValidationResultToErrorMessage(bindingResult);
             redirectAttributes.addFlashAttribute("errorMessage", errorMessage);
-
-            if (bindingResult.hasFieldErrors("path")) {
-                return "redirect:/";
-            } else {
-                return "redirect:/?path=" + URLEncoder.encode(dto.getPath(), StandardCharsets.UTF_8);
-            }
+            return "redirect:/?path=" + URLEncoder.encode(path, StandardCharsets.UTF_8);
         }
 
         try {
-            fileStorageService.renameFolder(dto);
+            fileStorageService.renameFolder(path, dto.getOldObjectName(), dto.getNewObjectName());
         } catch (FileStorageException e) {
             redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
         }
-        return "redirect:/?path=" + URLEncoder.encode(dto.getPath(), StandardCharsets.UTF_8);
+        return "redirect:/?path=" + URLEncoder.encode(path, StandardCharsets.UTF_8);
     }
 }

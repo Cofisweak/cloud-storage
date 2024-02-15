@@ -15,6 +15,9 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+
 @Controller
 @RequiredArgsConstructor
 @RequestMapping("/search")
@@ -29,15 +32,15 @@ public class SearchController {
         if (bindingResult.hasErrors()) {
             String errorMessage = ControllerUtils.mapValidationResultToErrorMessage(bindingResult);
             redirectAttributes.addFlashAttribute("errorMessage", errorMessage);
-            return "redirect:/";
+            return "redirect:/?path=" + URLEncoder.encode(dto.getPath(), StandardCharsets.UTF_8);
         }
 
         try {
             model.addAttribute("theme", theme);
-            model.addAttribute("foundObjects", fileStorageService.search(dto));
+            model.addAttribute("foundObjects", fileStorageService.search(dto.getPath(), dto.getQuery()));
         } catch (FileStorageException e) {
             redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
-            return "redirect:/";
+            return "redirect:/?path=" + URLEncoder.encode(dto.getPath(), StandardCharsets.UTF_8);
         }
 
         return "search";

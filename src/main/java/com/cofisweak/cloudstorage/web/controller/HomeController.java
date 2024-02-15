@@ -37,25 +37,20 @@ public class HomeController {
 
     @PostMapping("/upload")
     public String upload(@ModelAttribute("uploadDto") @Validated UploadDto dto,
-                         BindingResult bindingResult,
+                         BindingResult bindingResult, @RequestParam("path") String path,
                          RedirectAttributes redirectAttributes) {
         if (bindingResult.hasErrors()) {
             String errorMessage = ControllerUtils.mapValidationResultToErrorMessage(bindingResult);
             redirectAttributes.addFlashAttribute("errorMessage", errorMessage);
-
-            if (bindingResult.hasFieldErrors("path")) {
-                return "redirect:/";
-            } else {
-                return "redirect:/?path=" + URLEncoder.encode(dto.getPath(), StandardCharsets.UTF_8);
-            }
+            return "redirect:/?path=" + URLEncoder.encode(path, StandardCharsets.UTF_8);
         }
 
         try {
-            fileStorageService.upload(dto);
+            fileStorageService.upload(path, dto.getFiles());
         } catch (FileStorageException e) {
             redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
         }
 
-        return "redirect:/?path=" + URLEncoder.encode(dto.getPath(), StandardCharsets.UTF_8);
+        return "redirect:/?path=" + URLEncoder.encode(path, StandardCharsets.UTF_8);
     }
 }

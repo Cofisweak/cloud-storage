@@ -11,7 +11,7 @@ import java.io.InputStream;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class DownloadDto {
+public class DownloadFileDto {
     private String filename;
     private InputStream stream;
 }

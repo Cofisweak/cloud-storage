@@ -38,8 +38,7 @@
                 </svg>
                 Rename
             </button>
-            <form th:action="@{/file/delete}" method="post">
-                <input type="hidden" name="path" th:value="${rootPath}">
+            <form th:action="@{/file/delete(path=${rootPath})}" method="post">
                 <input type="hidden" name="objectName" th:value="*{objectName}">
                 <button class="btn btn-danger d-flex align-items-center" type="submit">
                     <svg width="20" height="20" viewBox="0 0 1024 1024" class="me-1">
@@ -63,8 +62,7 @@
                 <h5 class="modal-title">Rename</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <form id="rename-form" th:action="@{/file/rename}" method="post">
-                <input type="hidden" name="path" th:value="${rootPath}">
+            <form id="rename-form" th:action="@{/file/rename(path=${rootPath}, isFilePage=true)}" method="post">
                 <input type="hidden" name="oldObjectName" th:value="${file.objectName}">
                 <div class="modal-body">
                     <label for="rename-input" class="col-form-label">Enter new name: </label>

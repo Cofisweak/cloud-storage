@@ -1,4 +1,4 @@
-package com.cofisweak.cloudstorage.validator.objectName;
+package com.cofisweak.cloudstorage.validator;
 
 import jakarta.validation.Constraint;
 import jakarta.validation.Payload;
@@ -8,10 +8,10 @@ import java.lang.annotation.*;
 @Target({ElementType.FIELD})
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
-@Constraint(validatedBy = ObjectNameValidator.class)
-public @interface ObjectName {
+@Constraint(validatedBy = UploadFilenamesConstraintValidator.class)
+public @interface UploadFilenames {
 
-    String message() default "Invalid object name";
+    String message() default "Invalid filenames";
 
     Class<?>[] groups() default { };
 

@@ -7,7 +7,8 @@ import com.cofisweak.cloudstorage.domain.exception.ObjectNotFoundException;
 import com.cofisweak.cloudstorage.repository.StorageRepository;
 import com.cofisweak.cloudstorage.service.FileStorageService;
 import com.cofisweak.cloudstorage.utils.PathUtils;
-import com.cofisweak.cloudstorage.web.dto.*;
+import com.cofisweak.cloudstorage.web.dto.DownloadFileDto;
+import com.cofisweak.cloudstorage.web.dto.StorageEntityDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.catalina.connector.ClientAbortException;
@@ -31,8 +32,8 @@ public class MinioStorageImpl implements FileStorageService {
     private final StorageRepository storageRepository;
 
     @Override
-    public void createFolder(CreateFolderDto dto) {
-        String storagePath = resolveToStoragePath(dto.getPath() + dto.getFolderName()) + "/";
+    public void createFolder(String path, String folderName) {
+        String storagePath = resolveToStoragePath(path + folderName) + "/";
         if (storageRepository.isObjectExist(storagePath)) {
             throw new FileStorageException("Folder with this name already exists");
         }
@@ -53,8 +54,8 @@ public class MinioStorageImpl implements FileStorageService {
     }
 
     @Override
-    public void deleteFolder(DeleteDto dto) {
-        String storagePath = resolveToStoragePath(dto.getPath() + dto.getObjectName()) + "/";
+    public void deleteFolder(String path, String folderName) {
+        String storagePath = resolveToStoragePath(path + folderName) + "/";
         if (!storageRepository.isObjectExist(storagePath)) {
             throw new FileStorageException("Folder not found");
         }
@@ -62,19 +63,19 @@ public class MinioStorageImpl implements FileStorageService {
     }
 
     @Override
-    public void upload(UploadDto dto) {
+    public void upload(String path, List<MultipartFile> files) {
         Set<String> foldersToCheck = new HashSet<>();
         List<UploadFile> uploadFiles = new ArrayList<>();
-        for (MultipartFile file : dto.getFiles()) {
+        for (MultipartFile file : files) {
             String localPath = Optional.ofNullable(file.getOriginalFilename())
                     .orElseThrow(() -> new FileStorageException("Unable to upload file. File name isn't valid"));
 
             String localParentFolder = PathUtils.getRootFolder(localPath);
             String filename = PathUtils.extractObjectName(localPath);
 
-            foldersToCheck.addAll(getAllSubfolderPaths(dto.getPath(), localParentFolder));
+            foldersToCheck.addAll(getAllSubfolderPaths(path, localParentFolder));
 
-            String composedPath = composePath(dto.getPath(), localParentFolder, filename);
+            String composedPath = composePath(path, localParentFolder, filename);
             String storagePath = resolveToStoragePath(composedPath);
 
             try {
@@ -108,8 +109,8 @@ public class MinioStorageImpl implements FileStorageService {
     }
 
     @Override
-    public void deleteFile(DeleteDto dto) {
-        String storagePath = resolveToStoragePath(dto.getPath() + dto.getObjectName());
+    public void deleteFile(String path, String filename) {
+        String storagePath = resolveToStoragePath(path + filename);
         if (!storageRepository.isObjectExist(storagePath)) {
             throw new FileStorageException("File not found");
         }
@@ -117,11 +118,11 @@ public class MinioStorageImpl implements FileStorageService {
     }
 
     @Override
-    public DownloadDto downloadFile(String path) {
+    public DownloadFileDto downloadFile(String path) {
         String storagePath = resolveToStoragePath(path);
         InputStream stream = storageRepository.downloadFile(storagePath);
         String filename = PathUtils.extractObjectName(path);
-        return new DownloadDto(filename, stream);
+        return new DownloadFileDto(filename, stream);
     }
 
     @Override
@@ -159,13 +160,13 @@ public class MinioStorageImpl implements FileStorageService {
     }
 
     @Override
-    public List<StorageEntityDto> search(SearchDto dto) {
-        String storagePath = resolveToStoragePath(dto.getPath());
+    public List<StorageEntityDto> search(String path, String query) {
+        String storagePath = resolveToStoragePath(path);
         if (!storageRepository.isObjectExist(storagePath)) {
             throw new FileStorageException("Folder not found");
         }
         return storageRepository.getFolderContentRecursive(storagePath).stream()
-                .filter(object -> isObjectNameContainsQuery(object.getObjectName(), dto.getQuery()))
+                .filter(object -> isObjectNameContainsQuery(object.getObjectName(), query))
                 .sorted(Comparator
                         .comparing(StorageEntityDto::isDirectory).reversed()
                         .thenComparing(StorageEntityDto::getObjectName))
@@ -186,13 +187,13 @@ public class MinioStorageImpl implements FileStorageService {
     }
 
     @Override
-    public void renameFile(RenameDto dto) {
-        String path = composePath(dto.getPath(), dto.getOldObjectName());
-        String storagePath = resolveToStoragePath(path);
+    public void renameFile(String path, String oldFilename, String newFilename) {
+        String composedPath = composePath(path, oldFilename);
+        String storagePath = resolveToStoragePath(composedPath);
         if (!storageRepository.isObjectExist(storagePath)) {
             throw new ObjectNotFoundException("File not found");
         }
-        String newPath = composePath(dto.getPath(), dto.getNewObjectName());
+        String newPath = composePath(path, newFilename);
         String newStoragePath = resolveToStoragePath(newPath);
         if (storageRepository.isObjectExist(newStoragePath)) {
             throw new FileStorageException("File with this name already exist");
@@ -202,20 +203,20 @@ public class MinioStorageImpl implements FileStorageService {
     }
 
     @Override
-    public void renameFolder(RenameDto dto) {
-        String path = composePath(dto.getPath(), dto.getOldObjectName()) + "/";
-        String storagePath = resolveToStoragePath(path);
+    public void renameFolder(String path, String oldFolderName, String newFolderName) {
+        String composedPath = composePath(path, oldFolderName) + "/";
+        String storagePath = resolveToStoragePath(composedPath);
         if (!storageRepository.isObjectExist(storagePath)) {
-            throw new ObjectNotFoundException("File not found");
+            throw new ObjectNotFoundException("Folder not found");
         }
 
-        String newPath = composePath(dto.getPath(), dto.getNewObjectName()) + "/";
+        String newPath = composePath(path, newFolderName) + "/";
         String newStoragePath = resolveToStoragePath(newPath);
         if (storageRepository.isObjectExist(newStoragePath)) {
-            throw new FileStorageException("File with this name already exist");
+            throw new FileStorageException("Folder with this name already exist");
         }
 
-        copyFolder(storagePath, newStoragePath, path, newPath);
+        copyFolder(storagePath, newStoragePath, composedPath, newPath);
     }
 
     private void copyFolder(String storagePath, String newStoragePath, String path, String newPath) {

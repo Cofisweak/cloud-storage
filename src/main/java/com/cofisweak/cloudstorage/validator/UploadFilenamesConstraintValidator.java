@@ -1,24 +1,26 @@
-package com.cofisweak.cloudstorage.validator.objectName;
+package com.cofisweak.cloudstorage.validator;
 
+import com.cofisweak.cloudstorage.utils.PathUtils;
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
+import lombok.RequiredArgsConstructor;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
-public class FileNamesValidator implements ConstraintValidator<FileNames, List<MultipartFile>> {
+@RequiredArgsConstructor
+public class UploadFilenamesConstraintValidator implements ConstraintValidator<UploadFilenames, List<MultipartFile>> {
+
+    private final ObjectNameValidator validator;
     @Override
     public boolean isValid(List<MultipartFile> files, ConstraintValidatorContext constraintValidatorContext) {
         for (MultipartFile file : files) {
-            Pattern pattern = Pattern.compile("^[^\\\\!{}\\[\\]*|~^%#&]*$");
             String originalFilename = file.getOriginalFilename();
             if (originalFilename == null) {
                 return false;
             }
-            Matcher matcher = pattern.matcher(originalFilename);
-            if(!matcher.matches()) {
+            String filename = PathUtils.extractObjectName(originalFilename);
+            if (!validator.isValid(filename)) {
                 return false;
             }
         }

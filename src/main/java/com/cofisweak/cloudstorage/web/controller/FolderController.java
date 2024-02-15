@@ -1,6 +1,7 @@
 package com.cofisweak.cloudstorage.web.controller;
 
-import com.cofisweak.cloudstorage.domain.exception.FileStorageException;
+import com.cofisweak.cloudstorage.domain.exception.ObjectAlreadyExistException;
+import com.cofisweak.cloudstorage.domain.exception.ObjectNotFoundException;
 import com.cofisweak.cloudstorage.service.FileStorageService;
 import com.cofisweak.cloudstorage.utils.ControllerUtils;
 import com.cofisweak.cloudstorage.utils.PathUtils;
@@ -40,7 +41,7 @@ public class FolderController {
 
         try {
             fileStorageService.createFolder(path, dto.getFolderName());
-        } catch (FileStorageException e) {
+        } catch (ObjectAlreadyExistException e) {
             redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
         }
         return "redirect:/?path=" + URLEncoder.encode(path, StandardCharsets.UTF_8);
@@ -66,7 +67,7 @@ public class FolderController {
 
         try {
             fileStorageService.deleteFolder(path, dto.getObjectName());
-        } catch (FileStorageException e) {
+        } catch (ObjectNotFoundException e) {
             redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
         }
         return "redirect:/?path=" + URLEncoder.encode(path, StandardCharsets.UTF_8);
@@ -84,7 +85,7 @@ public class FolderController {
 
         try {
             fileStorageService.renameFolder(path, dto.getOldObjectName(), dto.getNewObjectName());
-        } catch (FileStorageException e) {
+        } catch (ObjectNotFoundException | ObjectAlreadyExistException e) {
             redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
         }
         return "redirect:/?path=" + URLEncoder.encode(path, StandardCharsets.UTF_8);

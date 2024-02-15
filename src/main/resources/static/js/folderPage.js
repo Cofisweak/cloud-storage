@@ -1,3 +1,5 @@
+//This file does not require any attention, there are a lot of bad decisions here
+
 const fileDropArea = document.getElementById("file-drop-area");
 const fileDropAdvice = document.getElementById('file-drop-advice');
 

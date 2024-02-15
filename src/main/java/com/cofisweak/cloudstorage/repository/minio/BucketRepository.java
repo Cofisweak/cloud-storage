@@ -6,11 +6,13 @@ import io.minio.MakeBucketArgs;
 import io.minio.MinioClient;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Repository;
 
 @Repository
 @RequiredArgsConstructor
+@Slf4j
 public class BucketRepository {
 
     private final MinioClient minioClient;
@@ -28,6 +30,7 @@ public class BucketRepository {
                     .build();
             minioClient.makeBucket(args);
         } catch (Exception e) {
+            log.error("An error occurred while creating bucket", e);
             throw new FileStorageException("Unable to create bucket", e);
         }
     }
@@ -39,6 +42,7 @@ public class BucketRepository {
                     .build();
             return minioClient.bucketExists(args);
         } catch (Exception e) {
+            log.error("An error occurred while checking bucket existing", e);
             throw new FileStorageException("Unable to check is bucket exist", e);
         }
     }

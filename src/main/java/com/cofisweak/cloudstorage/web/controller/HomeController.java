@@ -1,6 +1,6 @@
 package com.cofisweak.cloudstorage.web.controller;
 
-import com.cofisweak.cloudstorage.domain.exception.FileStorageException;
+import com.cofisweak.cloudstorage.domain.exception.UnableToUploadFilesException;
 import com.cofisweak.cloudstorage.service.FileStorageService;
 import com.cofisweak.cloudstorage.utils.ControllerUtils;
 import com.cofisweak.cloudstorage.utils.PathUtils;
@@ -47,7 +47,7 @@ public class HomeController {
 
         try {
             fileStorageService.upload(path, dto.getFiles());
-        } catch (FileStorageException e) {
+        } catch (UnableToUploadFilesException e) {
             redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
         }
 

@@ -11,6 +11,7 @@ import io.minio.messages.DeleteError;
 import io.minio.messages.DeleteObject;
 import io.minio.messages.Item;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Repository;
 
@@ -22,6 +23,7 @@ import java.util.List;
 
 @Repository
 @RequiredArgsConstructor
+@Slf4j
 public class MinioRepository implements StorageRepository {
 
     private final MinioClient minioClient;
@@ -40,6 +42,7 @@ public class MinioRepository implements StorageRepository {
                     .build();
             minioClient.putObject(args);
         } catch (Exception e) {
+            log.error("An error occurred while creating folder", e);
             throw new FileStorageException("Unable to create new folder", e);
         }
     }
@@ -64,6 +67,7 @@ public class MinioRepository implements StorageRepository {
                 removeObject.get();
             }
         } catch (Exception e) {
+            log.error("An error occurred while removing objects", e);
             throw new FileStorageException("Unable to remove objects", e);
         }
     }
@@ -77,6 +81,7 @@ public class MinioRepository implements StorageRepository {
                     .build();
             minioClient.removeObject(args);
         } catch (Exception e) {
+            log.error("An error occurred while removing object", e);
             throw new FileStorageException("Unable to remove object", e);
         }
     }
@@ -93,6 +98,7 @@ public class MinioRepository implements StorageRepository {
         } catch (ErrorResponseException e) {
             return false;
         } catch (Exception e) {
+            log.error("An error occurred while checking object", e);
             throw new FileStorageException("Unable to check object", e);
         }
     }
@@ -117,6 +123,7 @@ public class MinioRepository implements StorageRepository {
             Iterable<Result<Item>> result = minioClient.listObjects(args);
             return minioEntityMapper.map(result, path, includeSelf);
         } catch (Exception e) {
+            log.error("An error occurred while getting object", e);
             throw new FileStorageException("Unable to get folder content", e);
         }
     }
@@ -130,6 +137,7 @@ public class MinioRepository implements StorageRepository {
                     .build();
             return minioClient.getObject(args);
         } catch (Exception e) {
+            log.error("An error occurred while getting file download stream", e);
             throw new FileStorageException("Unable to download file", e);
         }
     }
@@ -143,6 +151,7 @@ public class MinioRepository implements StorageRepository {
                     .build();
             minioClient.uploadSnowballObjects(args);
         } catch (Exception e) {
+            log.error("An error occurred while uploading files", e);
             throw new FileStorageException("Unable to upload files", e);
         }
     }
@@ -159,6 +168,7 @@ public class MinioRepository implements StorageRepository {
             Iterable<Result<Item>> result = minioClient.listObjects(args);
             return minioEntityMapper.map(result.iterator().next().get());
         } catch (Exception e) {
+            log.error("An error occurred while getting file", e);
             throw new FileStorageException("Unable to get file", e);
         }
     }
@@ -177,6 +187,7 @@ public class MinioRepository implements StorageRepository {
                     .build();
             minioClient.copyObject(args);
         } catch (Exception e) {
+            log.error("An error occurred while coping object", e);
             throw new FileStorageException("Unable to copy object", e);
         }
     }

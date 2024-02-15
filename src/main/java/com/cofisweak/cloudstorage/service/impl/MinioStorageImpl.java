@@ -2,8 +2,9 @@ package com.cofisweak.cloudstorage.service.impl;
 
 import com.cofisweak.cloudstorage.domain.UploadFile;
 import com.cofisweak.cloudstorage.domain.User;
-import com.cofisweak.cloudstorage.domain.exception.FileStorageException;
+import com.cofisweak.cloudstorage.domain.exception.ObjectAlreadyExistException;
 import com.cofisweak.cloudstorage.domain.exception.ObjectNotFoundException;
+import com.cofisweak.cloudstorage.domain.exception.UnableToUploadFilesException;
 import com.cofisweak.cloudstorage.repository.StorageRepository;
 import com.cofisweak.cloudstorage.service.FileStorageService;
 import com.cofisweak.cloudstorage.utils.PathUtils;
@@ -35,7 +36,7 @@ public class MinioStorageImpl implements FileStorageService {
     public void createFolder(String path, String folderName) {
         String storagePath = resolveToStoragePath(path + folderName) + "/";
         if (storageRepository.isObjectExist(storagePath)) {
-            throw new FileStorageException("Folder with this name already exists");
+            throw new ObjectAlreadyExistException("Folder with this name already exists");
         }
         storageRepository.createFolder(storagePath);
     }
@@ -57,7 +58,7 @@ public class MinioStorageImpl implements FileStorageService {
     public void deleteFolder(String path, String folderName) {
         String storagePath = resolveToStoragePath(path + folderName) + "/";
         if (!storageRepository.isObjectExist(storagePath)) {
-            throw new FileStorageException("Folder not found");
+            throw new ObjectNotFoundException("Folder not found");
         }
         storageRepository.removeFolder(storagePath);
     }
@@ -68,7 +69,7 @@ public class MinioStorageImpl implements FileStorageService {
         List<UploadFile> uploadFiles = new ArrayList<>();
         for (MultipartFile file : files) {
             String localPath = Optional.ofNullable(file.getOriginalFilename())
-                    .orElseThrow(() -> new FileStorageException("Unable to upload file. File name isn't valid"));
+                    .orElseThrow(() -> new UnableToUploadFilesException("Unable to upload files. One of files isn't valid"));
 
             String localParentFolder = PathUtils.getRootFolder(localPath);
             String filename = PathUtils.extractObjectName(localPath);
@@ -83,6 +84,7 @@ public class MinioStorageImpl implements FileStorageService {
                 uploadFiles.add(uploadFile);
             } catch (IOException e) {
                 log.error("An error occurred while processing download file request", e);
+                throw new UnableToUploadFilesException("Unable to upload files");
             }
         }
         createFoldersIfNotExist(foldersToCheck);
@@ -112,7 +114,7 @@ public class MinioStorageImpl implements FileStorageService {
     public void deleteFile(String path, String filename) {
         String storagePath = resolveToStoragePath(path + filename);
         if (!storageRepository.isObjectExist(storagePath)) {
-            throw new FileStorageException("File not found");
+            throw new ObjectNotFoundException("File not found");
         }
         storageRepository.removeFile(storagePath);
     }
@@ -129,21 +131,18 @@ public class MinioStorageImpl implements FileStorageService {
     public void downloadFolder(String path, OutputStream responseStream) {
         String storagePath = resolveToStoragePath(path);
         if (!storageRepository.isObjectExist(storagePath)) {
-            throw new FileStorageException("Folder not found");
+            throw new ObjectNotFoundException("Folder not found");
         }
         List<StorageEntityDto> objects = storageRepository.getFolderContentRecursive(storagePath).stream()
                 .filter(storageEntityDto -> !storageEntityDto.isDirectory())
                 .toList();
-        if (objects.isEmpty()) {
-            throw new FileStorageException("Folder is empty");
-        }
         try (ZipOutputStream zip = new ZipOutputStream(responseStream)) {
             for (StorageEntityDto object : objects) {
                 writeObjectToZip(object, zip, path);
             }
         } catch (ClientAbortException ignored) {
         } catch (IOException e) {
-            log.error("An error occurred while processing download folder request", e);
+            throw new RuntimeException("An error occurred while processing download folder request", e);
         }
     }
 
@@ -163,7 +162,7 @@ public class MinioStorageImpl implements FileStorageService {
     public List<StorageEntityDto> search(String path, String query) {
         String storagePath = resolveToStoragePath(path);
         if (!storageRepository.isObjectExist(storagePath)) {
-            throw new FileStorageException("Folder not found");
+            throw new ObjectNotFoundException("Search path isn't valid");
         }
         return storageRepository.getFolderContentRecursive(storagePath).stream()
                 .filter(object -> isObjectNameContainsQuery(object.getObjectName(), query))
@@ -196,7 +195,7 @@ public class MinioStorageImpl implements FileStorageService {
         String newPath = composePath(path, newFilename);
         String newStoragePath = resolveToStoragePath(newPath);
         if (storageRepository.isObjectExist(newStoragePath)) {
-            throw new FileStorageException("File with this name already exist");
+            throw new ObjectAlreadyExistException("File with this name already exist");
         }
         storageRepository.copyObject(storagePath, newStoragePath);
         storageRepository.removeFile(storagePath);
@@ -213,7 +212,7 @@ public class MinioStorageImpl implements FileStorageService {
         String newPath = composePath(path, newFolderName) + "/";
         String newStoragePath = resolveToStoragePath(newPath);
         if (storageRepository.isObjectExist(newStoragePath)) {
-            throw new FileStorageException("Folder with this name already exist");
+            throw new ObjectAlreadyExistException("Folder with this name already exist");
         }
 
         copyFolder(storagePath, newStoragePath, composedPath, newPath);

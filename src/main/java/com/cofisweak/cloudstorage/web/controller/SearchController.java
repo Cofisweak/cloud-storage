@@ -1,6 +1,6 @@
 package com.cofisweak.cloudstorage.web.controller;
 
-import com.cofisweak.cloudstorage.domain.exception.FileStorageException;
+import com.cofisweak.cloudstorage.domain.exception.ObjectNotFoundException;
 import com.cofisweak.cloudstorage.service.FileStorageService;
 import com.cofisweak.cloudstorage.utils.ControllerUtils;
 import com.cofisweak.cloudstorage.web.dto.SearchDto;
@@ -38,7 +38,7 @@ public class SearchController {
         try {
             model.addAttribute("theme", theme);
             model.addAttribute("foundObjects", fileStorageService.search(dto.getPath(), dto.getQuery()));
-        } catch (FileStorageException e) {
+        } catch (ObjectNotFoundException e) {
             redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
             return "redirect:/?path=" + URLEncoder.encode(dto.getPath(), StandardCharsets.UTF_8);
         }

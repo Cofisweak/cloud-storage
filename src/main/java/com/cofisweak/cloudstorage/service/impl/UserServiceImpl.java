@@ -9,6 +9,7 @@ import com.cofisweak.cloudstorage.service.FileStorageService;
 import com.cofisweak.cloudstorage.service.UserService;
 import com.cofisweak.cloudstorage.web.dto.RegisterDto;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -18,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
+@Slf4j
 public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
@@ -39,7 +41,9 @@ public class UserServiceImpl implements UserService {
         User user = userMapper.toEntity(dto);
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         userRepository.save(user);
+        log.info("Created new user: {}", dto.getUsername());
         fileStorageService.createUserDirectory(user.getId());
+        log.info("Created user directory for user: {}", dto.getUsername());
     }
 
     @Override
